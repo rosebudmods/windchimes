@@ -8,6 +8,11 @@
   "authors": [
     "${mod_authors}"
   ],
+  "contact": {
+    "homepage": "${mod_homepage}",
+    "sources": "${mod_sources}",
+    "issues": "${mod_issues}"
+  },
   "license": "${license}",
   "environment": "*",
   "entrypoints": {
