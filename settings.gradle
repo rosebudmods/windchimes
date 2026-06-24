@@ -2,17 +2,22 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
         mavenCentral()
+        def fabricMaven = maven {
+            name = 'Fabric'
+            url = uri('https://maven.fabricmc.net')
+        }
         exclusiveContent {
-            forRepository {
-                maven {
-                    name = 'Fabric'
-                    url = uri('https://maven.fabricmc.net')
-                }
-            }
+            forRepositories(fabricMaven)
             filter {
                 includeGroupAndSubgroups('net.fabricmc')
             }
         }
+    }
+
+    plugins {
+        id 'net.fabricmc.fabric-loom' version '1.17.12'
+        id 'net.fabricmc.fabric-loom-remap' version '1.17.12'
+        id 'net.neoforged.moddev' version '2.0.141'
     }
 }
 
@@ -24,15 +29,22 @@ plugins {
 rootProject.name = 'windchimes'
 
 stonecutter {
-    centralScript = 'build.gradle'
     kotlinController = false
+}
 
-    shared {
-        versions('1.21.1', '26.1')
-        vcsVersion = '1.21.1'
-    }
+stonecutter.create(rootProject) {
+    versions('1.21.1',
+            '1.21.2',
+            '1.21.4',
+            '1.21.5',
+            '1.21.6',
+            '1.21.9',
+            '1.21.11',
+            '26.1',
+            '26.2')
+    vcsVersion = '1.21.1'
 
-    register('common')
-    register('fabric')
-    register('neoforge')
+    branch('common')
+    branch('fabric')
+    branch('neoforge')
 }

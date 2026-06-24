@@ -2,6 +2,10 @@ plugins {
     id 'java-library'
 }
 
+stonecutter {
+    properties.tags(('versions:' + current.version).toString())
+}
+
 base {
     archivesName = "${mod_id}-${project.name}-${minecraft_version}"
 }
@@ -12,42 +16,39 @@ java {
 
 repositories {
     mavenCentral()
+    def spongeMaven = maven {
+        name = 'Sponge'
+        url = 'https://repo.spongepowered.org/repository/maven-public'
+    }
     exclusiveContent {
-        forRepository {
-            maven {
-                name = 'Sponge'
-                url = 'https://repo.spongepowered.org/repository/maven-public'
-            }
-        }
+        forRepositories(spongeMaven)
         filter { includeGroupAndSubgroups('org.spongepowered') }
     }
 }
 
 processResources {
-    var expandProps = [
-            'version'                      : version,
-            'group'                        : project.group,
-            'minecraft_version'            : minecraft_version,
-            'minecraft_version_range'      : minecraft_version_range,
-            'fabric_version'               : fabric_version,
-            'fabric_loader_version'        : fabric_loader_version,
-            'mod_name'                     : mod_name,
-            'mod_authors'                  : mod_authors,
-            'mod_id'                       : mod_id,
-            'mod_icon'                     : mod_icon,
-            'mod_banner'                   : mod_banner,
-            'mod_homepage'                 : mod_homepage,
-            'mod_sources'                  : mod_sources,
-            'mod_issues'                   : mod_issues,
-            'license'                      : license,
-            'description'                  : project.description,
-            'neoforge_version'             : neoforge_version,
-            'neoforge_loader_version_range': neoforge_loader_version_range,
-            'java_version'                 : java_version
-    ]
+    var expandProps = ['version'                         : version,
+                       'group'                           : project.group,
+                       'minecraft_version'               : minecraft_version,
+                       'minecraft_version_range_fabric'  : minecraft_version_range_fabric,
+                       'minecraft_version_range_neoforge': minecraft_version_range_neoforge,
+                       'fabric_version'                  : fabric_version,
+                       'fabric_loader_version'           : fabric_loader_version,
+                       'neoforge_version'                : neoforge_version,
+                       'neoforge_loader_version_range'   : neoforge_loader_version_range,
+                       'java_version'                    : java_version,
+                       'mod_name'                        : mod_name,
+                       'mod_authors'                     : mod_authors,
+                       'mod_id'                          : mod_id,
+                       'mod_icon'                        : mod_icon,
+                       'mod_banner'                      : mod_banner,
+                       'mod_homepage'                    : mod_homepage,
+                       'mod_sources'                     : mod_sources,
+                       'mod_issues'                      : mod_issues,
+                       'license'                         : license,
+                       'description'                     : project.description]
 
-    var jsonExpandProps = expandProps.collectEntries {
-        key, value -> [(key): value instanceof String ? value.replace("\n", "\\\\n") : value]
+    var jsonExpandProps = expandProps.collectEntries { key, value -> [(key): value instanceof String ? value.replace("\n", "\\\\n") : value]
     }
 
     filesMatching(['META-INF/mods.toml', 'META-INF/neoforge.mods.toml']) {
