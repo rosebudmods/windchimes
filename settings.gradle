@@ -18,9 +18,21 @@ pluginManagement {
 
 plugins {
     id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+    id 'dev.kikugie.stonecutter' version '0.9.6'
 }
 
 rootProject.name = 'windchimes'
-include('common')
-include('fabric')
-include('neoforge')
+
+stonecutter {
+    centralScript = 'build.gradle'
+    kotlinController = false
+
+    shared {
+        versions('1.21.1', '26.1')
+        vcsVersion = '1.21.1'
+    }
+
+    register('common')
+    register('fabric')
+    register('neoforge')
+}

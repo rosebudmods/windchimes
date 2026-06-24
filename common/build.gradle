@@ -25,8 +25,8 @@ configurations {
 }
 
 artifacts {
-    commonJava sourceSets.main.java.sourceDirectories.singleFile
-    commonResources file('src/main/resources')
+    sourceSets.main.java.sourceDirectories.files.each { commonJava it }
+    sourceSets.main.resources.sourceDirectories.files.each { commonResources it }
 }
 
 def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)
