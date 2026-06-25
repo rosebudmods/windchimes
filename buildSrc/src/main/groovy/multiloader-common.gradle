@@ -6,14 +6,16 @@ stonecutter {
     properties.tags(('versions:' + current.version).toString())
 }
 
+def projectName = stonecutter.current.project
+def loader = projectName.substring(projectName.lastIndexOf('-') + 1)
 project.version = mod_version
 
 base {
-    archivesName = "${mod_id}-${project.name}-${minecraft_version}"
+    archivesName = "${mod_id}-${loader}-${minecraft_version}"
 }
 
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(java_version)
+    toolchain.languageVersion = JavaLanguageVersion.of(Integer.parseInt(java_version.toString()))
 }
 
 repositories {

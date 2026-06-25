@@ -1,4 +1,65 @@
 plugins {
     id "dev.kikugie.stonecutter"
 }
-stonecutter.active "1.21.1"
+
+apply from: "gradle/stonecutter-targets.gradle"
+
+def versionTargets = ext.versionTargets
+def devTasks = ext.devTasks
+def targetVersion = ext.targetVersion
+def activeFile = file(".sc_active_version")
+def taskNames = gradle.startParameter.taskNames
+def taskArg = { name ->
+    def index = taskNames.indexOf(name)
+    index >= 0 && index + 1 < taskNames.size() ? taskNames[index + 1] : null
+}
+def versionTarget = { version -> versionTargets[version] ? "${versionTargets[version]}-${baseLoader}" : null }
+def requestedTarget = versionTarget(taskArg("use"))
+if (taskNames.contains("reset")) requestedTarget = baseTarget
+def activeFileTarget = activeFile.exists() ? activeFile.text.trim() : baseTarget
+def activeVersion = targetVersion(activeFileTarget)
+def requestedLoader = devTasks.find { taskNames.contains(it.key) }?.value?.loader
+if (requestedLoader) requestedTarget = "${activeVersion}-${requestedLoader}"
+
+stonecutter.active(requestedTarget ? requestedTarget.toString() : activeFile)
+
+tasks.matching { it.name == "stonecutterIdea" }.configureEach {
+    enabled = false
+}
+
+versionTargets.keySet().each { version ->
+    tasks.register(version.toString()) {
+        description = "Version selector for use"
+    }
+}
+
+tasks.register("use") {
+    group = "stonecutter"
+    description = "Set active Stonecutter version, e.g. ./gradlew use 1.21.10"
+    doLast {
+        def version = taskArg("use")
+        def target = versionTargets[version]
+        if (!target) {
+            throw new GradleException("Use ./gradlew use <version>. Known versions: ${versionTargets.keySet().join(', ')}")
+        }
+        activeFile.text = "${target}-${baseLoader}"
+        logger.lifecycle("Active Stonecutter version: ${target}")
+    }
+}
+
+devTasks.each { name, run ->
+    tasks.register(name.toString()) {
+        group = "mod development"
+        description = "Run the ${run.name} for the selected version"
+        dependsOn { "${stonecutter.current.project}:${run.run}" }
+    }
+}
+
+tasks.register("reset") {
+    group = "stonecutter"
+    description = "Reset active Stonecutter version"
+    doLast {
+        activeFile.text = baseTarget
+        logger.lifecycle("Active Stonecutter target: ${baseTarget}")
+    }
+}

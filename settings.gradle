@@ -28,23 +28,30 @@ plugins {
 
 rootProject.name = 'windchimes'
 
+apply from: 'gradle/stonecutter-targets.gradle'
+
+def versionTargets = ext.versionTargets
+def devTasks = ext.devTasks
+def targetVersion = ext.targetVersion
+def targetLoader = ext.targetLoader
+def taskNames = gradle.startParameter.taskNames
+def activeTarget = file('.sc_active_version').exists() ? file('.sc_active_version').text.trim() : baseTarget
+def useIndex = taskNames.indexOf('use')
+if (useIndex >= 0 && useIndex + 1 < taskNames.size()) {
+    def version = versionTargets[taskNames[useIndex + 1]]
+    if (version) activeTarget = "${version}-${baseLoader}"
+}
+if (taskNames.contains('reset')) activeTarget = baseTarget
+def activeVersion = targetVersion(activeTarget)
+def requestedLoader = devTasks.find { taskNames.contains(it.key) }?.value?.loader
+if (requestedLoader) activeTarget = "${activeVersion}-${requestedLoader}"
+
 stonecutter {
     kotlinController = false
 }
 
 stonecutter.create(rootProject) {
-    versions('1.21.1',
-            '1.21.2',
-            '1.21.4',
-            '1.21.5',
-            '1.21.6',
-            '1.21.9',
-            '1.21.11',
-            '26.1',
-            '26.2')
-    vcsVersion = '1.21.1'
-
-    branch('common')
-    branch('fabric')
-    branch('neoforge')
+    def loader = targetLoader(activeTarget)
+    delegate.version(activeTarget, activeVersion).buildscript = "build.${loader}.gradle".toString()
+    vcsVersion = activeTarget
 }
