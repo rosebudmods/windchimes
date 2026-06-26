@@ -11,7 +11,7 @@ def loader = projectName.substring(projectName.lastIndexOf('-') + 1)
 project.version = mod_version
 
 base {
-    archivesName = "${mod_id}-${loader}-${minecraft_version}"
+    archivesName = "${mod_id}-${loader}"
 }
 
 java {
@@ -44,8 +44,6 @@ processResources {
                        'mod_name'                        : mod_name,
                        'mod_authors'                     : mod_authors,
                        'mod_id'                          : mod_id,
-                       'mod_icon'                        : mod_icon,
-                       'mod_banner'                      : mod_banner,
                        'mod_homepage'                    : mod_homepage,
                        'mod_sources'                     : mod_sources,
                        'mod_issues'                      : mod_issues,

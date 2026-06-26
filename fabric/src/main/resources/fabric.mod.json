@@ -4,7 +4,7 @@
   "version": "${version}",
   "name": "${mod_name}",
   "description": "${description}",
-  "icon": "${mod_icon}",
+  "icon": "assets/${mod_id}/icon.png",
   "authors": [
     "${mod_authors}"
   ],
@@ -28,5 +28,11 @@
     "fabric-api": "*",
     "minecraft": "${minecraft_version_range_fabric}",
     "java": ">=${java_version}"
+  },
+  "custom": {
+    "catalogue": {
+      "banner": "assets/${mod_id}/banner.png",
+      "background": "assets/${mod_id}/background.png"
+    }
   }
 }

@@ -35,3 +35,10 @@ ext.targetLoader = { String target ->
     if (index < 1 || index == target.length() - 1) throw new GradleException("Invalid Stonecutter target: ${target}")
     target.substring(index + 1)
 }
+ext.buildTargets = { String requested ->
+    def versions = requested ? [requested] : versionTargets.values().toList().unique()
+    versions.collectMany { version -> ['fabric', 'neoforge'].collect { loader -> "${version}-${loader}" } }
+}
+ext.finalJarTask = { String target ->
+    target.endsWith('-neoforge') || !targetVersion(target).startsWith('1.') ? 'jar' : 'remapJar'
+}

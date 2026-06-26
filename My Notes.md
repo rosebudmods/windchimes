@@ -13,6 +13,11 @@
 ./gradlew serverNeoForge
 ```
 
+#### Build
+```
+./gradlew buildJars {minecraft version}
+```
+
 #### New Versions?
 Add them in `/gradle/stonecutter-targets.gradle`.
 

@@ -5,7 +5,7 @@ minecraft_version_range_neoforge = "[1.21,1.21.2)"
 minecraft_version_range_fabric = ">=1.21 <1.21.2"
 neo_form_version = "1.21.1-20240808.144430"
 fabric_version = "0.116.12+1.21.1"
-neoforge_version = "21.1.234"
+neoforge_version = "21.0.167"
 java_version = 21
 
 [versions."1.21.2"]

@@ -7,17 +7,23 @@ apply from: "gradle/stonecutter-targets.gradle"
 def versionTargets = ext.versionTargets
 def devTasks = ext.devTasks
 def targetVersion = ext.targetVersion
+def buildTargets = ext.buildTargets
+def finalJarTask = ext.finalJarTask
 def activeFile = file(".sc_active_version")
 def taskNames = gradle.startParameter.taskNames
 def taskArg = { name ->
     def index = taskNames.indexOf(name)
-    index >= 0 && index + 1 < taskNames.size() ? taskNames[index + 1] : null
+    index >= 0 && index + 1 < taskNames.size() ? taskNames.get(index + 1) : null
 }
 def versionTarget = { version -> versionTargets[version] ? "${versionTargets[version]}-${baseLoader}" : null }
 def requestedTarget = versionTarget(taskArg("use"))
 if (taskNames.contains("reset")) requestedTarget = baseTarget
 def activeFileTarget = activeFile.exists() ? activeFile.text.trim() : baseTarget
 def activeVersion = targetVersion(activeFileTarget)
+def buildIndex = taskNames.indexOf("buildJars")
+def requestedBuildVersion = buildIndex >= 0 && buildIndex + 1 < taskNames.size() ? versionTargets[taskNames.get(buildIndex + 1)] : null
+def exportTargets = buildIndex >= 0 ? buildTargets(requestedBuildVersion) : []
+if (exportTargets && !exportTargets.contains(activeFileTarget)) requestedTarget = exportTargets.get(0)
 def requestedLoader = devTasks.find { taskNames.contains(it.key) }?.value?.loader
 if (requestedLoader) requestedTarget = "${activeVersion}-${requestedLoader}"
 
@@ -61,5 +67,25 @@ tasks.register("reset") {
     doLast {
         activeFile.text = baseTarget
         logger.lifecycle("Active Stonecutter target: ${baseTarget}")
+    }
+}
+
+tasks.register("buildJars", Copy) {
+    group = "build"
+    description = "Build jars into export, optionally for one version, e.g. ./gradlew buildJars 1.21.10"
+
+    dependsOn exportTargets.collect { target ->
+        ":${target}:${finalJarTask(target)}"
+    }
+
+    from exportTargets.collect { target ->
+        layout.projectDirectory.dir("versions/${target}/build/libs")
+    }
+    into layout.projectDirectory.dir("export")
+    include "*.jar"
+    exclude "*-dev.jar", "*-sources.jar"
+
+    doFirst {
+        delete layout.projectDirectory.dir("export")
     }
 }
