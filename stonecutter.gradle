@@ -1,3 +1,7 @@
+import java.nio.file.Files
+
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING
+
 plugins {
     id "dev.kikugie.stonecutter"
 }
@@ -23,9 +27,10 @@ def activeVersion = targetVersion(activeFileTarget)
 def buildIndex = taskNames.indexOf("buildJars")
 def requestedBuildVersion = buildIndex >= 0 && buildIndex + 1 < taskNames.size() ? versionTargets[taskNames.get(buildIndex + 1)] : null
 def exportTargets = buildIndex >= 0 ? buildTargets(requestedBuildVersion) : []
-if (exportTargets && !exportTargets.contains(activeFileTarget)) requestedTarget = exportTargets.get(0)
 def requestedLoader = devTasks.find { taskNames.contains(it.key) }?.value?.loader
 if (requestedLoader) requestedTarget = "${activeVersion}-${requestedLoader}"
+def scTarget = findProperty("scTarget")?.toString()
+if (scTarget) requestedTarget = scTarget
 
 stonecutter.active(requestedTarget ? requestedTarget.toString() : activeFile)
 
@@ -42,6 +47,7 @@ versionTargets.keySet().each { version ->
 tasks.register("use") {
     group = "stonecutter"
     description = "Set active Stonecutter version, e.g. ./gradlew use 1.21.10"
+    if (requestedTarget) dependsOn("stonecutterSwitchTo${requestedTarget}")
     doLast {
         def version = taskArg("use")
         def target = versionTargets[version]
@@ -57,35 +63,51 @@ devTasks.each { name, run ->
     tasks.register(name.toString()) {
         group = "mod development"
         description = "Run the ${run.name} for the selected version"
-        dependsOn { "${stonecutter.current.project}:${run.run}" }
+        dependsOn { ":${stonecutter.current.project}:${run.run}" }
     }
 }
 
 tasks.register("reset") {
     group = "stonecutter"
     description = "Reset active Stonecutter version"
+    dependsOn("stonecutterSwitchTo${baseTarget}")
     doLast {
         activeFile.text = baseTarget
         logger.lifecycle("Active Stonecutter target: ${baseTarget}")
     }
 }
 
-tasks.register("buildJars", Copy) {
+tasks.register("buildJars") {
     group = "build"
     description = "Build jars into export, optionally for one version, e.g. ./gradlew buildJars 1.21.10"
 
-    dependsOn exportTargets.collect { target ->
-        ":${target}:${finalJarTask(target)}"
-    }
+    doLast {
+        if (buildIndex >= 0 && buildIndex + 1 < taskNames.size() && !requestedBuildVersion) {
+            throw new GradleException("Use ./gradlew buildJars [version]. Known versions: ${versionTargets.keySet().join(', ')}")
+        }
+        def exportDir = file("export")
+        def wrapper = file(System.getProperty("os.name").toLowerCase().contains("windows") ? "gradlew.bat" : "gradlew")
+        def originalTarget = activeFile.exists() ? activeFile.text.trim() : baseTarget
+        def runGradle = { args ->
+            def command = ([wrapper.absolutePath] + args).collect { it.toString() }
+            def result = new ProcessBuilder(command).directory(projectDir).inheritIO().start().waitFor()
+            if (result != 0) throw new GradleException("Gradle exited with ${result}: ${command.join(' ')}")
+        }
 
-    from exportTargets.collect { target ->
-        layout.projectDirectory.dir("versions/${target}/build/libs")
-    }
-    into layout.projectDirectory.dir("export")
-    include "*.jar"
-    exclude "*-dev.jar", "*-sources.jar"
+        if (!exportDir.deleteDir() || !exportDir.mkdirs()) throw new GradleException("Could not recreate ${exportDir}")
 
-    doFirst {
-        delete layout.projectDirectory.dir("export")
+        try {
+            exportTargets.each { target ->
+                logger.lifecycle("Building ${target}")
+                runGradle([":${target}:${finalJarTask(target)}", "-P", "scTarget=${target}", "--console", "plain"])
+                new File(projectDir, "versions/${target}/build/libs").eachFileMatch(~/.*\.jar/) { jar ->
+                    if (!jar.name.endsWith('-dev.jar') && !jar.name.endsWith('-sources.jar')) {
+                        Files.copy(jar.toPath(), new File(exportDir, jar.name).toPath(), REPLACE_EXISTING)
+                    }
+                }
+            }
+        } finally {
+            runGradle(["stonecutterSwitchTo${originalTarget}", "--console", "plain"])
+        }
     }
 }

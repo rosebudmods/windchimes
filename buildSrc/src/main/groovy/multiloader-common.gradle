@@ -10,6 +10,27 @@ def projectName = stonecutter.current.project
 def loader = projectName.substring(projectName.lastIndexOf('-') + 1)
 project.version = mod_version
 
+sourceSets.main.java.srcDirs(rootProject.file('common/src/main/java'), rootProject.file(loader + '/src/main/java'))
+sourceSets.main.resources.srcDirs(rootProject.file('common/src/main/resources'), rootProject.file(loader + '/src/main/resources'))
+
+tasks.named('stonecutterPrepare') {
+    root = rootProject.projectDir
+    source.from(rootProject.fileTree('common/src/main/java'), rootProject.fileTree(loader + '/src/main/java'))
+}
+def mergeTask = tasks.named('stonecutterMerge') {
+    doNotTrackState('Merges processed Stonecutter comments into external source roots.')
+    into(rootProject.projectDir)
+}
+tasks.matching { it.name in ['stonecutterPrepareTest', 'stonecutterMergeTest'] }.configureEach {
+    enabled = false
+}
+tasks.matching { it.name in ['compileJava', 'processResources', 'generateDLIConfig', 'prepareClientRun', 'prepareServerRun', 'runClient', 'runServer'] }.configureEach {
+    dependsOn(mergeTask)
+}
+tasks.matching { it.name in ['runClient', 'runServer'] }.configureEach {
+    dependsOn(":stonecutterSwitchTo${stonecutter.current.project}")
+}
+
 base {
     archivesName = "${mod_id}-${loader}"
 }

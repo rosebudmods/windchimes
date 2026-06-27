@@ -36,8 +36,8 @@ def targetVersion = ext.targetVersion
 def targetLoader = ext.targetLoader
 def buildTargets = ext.buildTargets
 def taskNames = gradle.startParameter.taskNames
+def scTarget = gradle.startParameter.projectProperties['scTarget']
 def activeTarget = file('.sc_active_version').exists() ? file('.sc_active_version').text.trim() : baseTarget
-def buildIndex = taskNames.indexOf('buildJars')
 def useIndex = taskNames.indexOf('use')
 if (useIndex >= 0 && useIndex + 1 < taskNames.size()) {
     def version = versionTargets[taskNames.get(useIndex + 1)]
@@ -47,20 +47,17 @@ if (taskNames.contains('reset')) activeTarget = baseTarget
 def activeVersion = targetVersion(activeTarget)
 def requestedLoader = devTasks.find { taskNames.contains(it.key) }?.value?.loader
 if (requestedLoader) activeTarget = "${activeVersion}-${requestedLoader}"
+if (scTarget) {
+    if (!buildTargets(null).contains(scTarget)) throw new GradleException("Unknown Stonecutter target: ${scTarget}")
+    activeTarget = scTarget
+}
 
 stonecutter {
     kotlinController = false
 }
 
 stonecutter.create(rootProject) {
-    def targets = [activeTarget]
-    if (buildIndex >= 0) {
-        def requestedVersion = buildIndex + 1 < taskNames.size() ? versionTargets[taskNames.get(buildIndex + 1)] : null
-        targets = buildTargets(requestedVersion)
-    }
-    targets.each { target ->
-        def loader = targetLoader(target)
-        delegate.version(target, targetVersion(target)).buildscript = "build.${loader}.gradle".toString()
-    }
-    vcsVersion = targets.contains(activeTarget) ? activeTarget : targets.get(0)
+    def loader = targetLoader(activeTarget)
+    delegate.version(activeTarget, targetVersion(activeTarget)).buildscript = "build.${loader}.gradle".toString()
+    vcsVersion = activeTarget
 }

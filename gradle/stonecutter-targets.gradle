@@ -1,16 +1,16 @@
-ext.baseVersion = '1.21.1'
+ext.baseVersion = '1.21'
 ext.baseLoader = 'fabric'
 ext.baseTarget = "${baseVersion}-${baseLoader}".toString()
 ext.versionTargets = [
-        '1.21'   : '1.21.1',
-        '1.21.1' : '1.21.1',
-        '1.21.2' : '1.21.2',
-        '1.21.3' : '1.21.2',
+        '1.21'   : '1.21',
+        '1.21.1' : '1.21',
+        '1.21.2' : '1.21.3',
+        '1.21.3' : '1.21.3',
         '1.21.4' : '1.21.4',
         '1.21.5' : '1.21.5',
-        '1.21.6' : '1.21.6',
-        '1.21.7' : '1.21.6',
-        '1.21.8' : '1.21.6',
+        '1.21.6' : '1.21.8',
+        '1.21.7' : '1.21.8',
+        '1.21.8' : '1.21.8',
         '1.21.9' : '1.21.9',
         '1.21.10': '1.21.9',
         '1.21.11': '1.21.11',
@@ -37,7 +37,7 @@ ext.targetLoader = { String target ->
 }
 ext.buildTargets = { String requested ->
     def versions = requested ? [requested] : versionTargets.values().toList().unique()
-    versions.collectMany { version -> ['fabric', 'neoforge'].collect { loader -> "${version}-${loader}" } }
+    versions.collectMany { version -> ['fabric', 'neoforge'].collect { loader -> "${version}-${loader}".toString() } }
 }
 ext.finalJarTask = { String target ->
     target.endsWith('-neoforge') || !targetVersion(target).startsWith('1.') ? 'jar' : 'remapJar'

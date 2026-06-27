@@ -7,9 +7,6 @@ plugins {
 def deobfuscated = stonecutter.eval(minecraft_version, '>=26')
 apply plugin: deobfuscated ? 'net.fabricmc.fabric-loom' : 'net.fabricmc.fabric-loom-remap'
 
-sourceSets.main.java.srcDirs(rootProject.file('common/src/main/java'), rootProject.file('fabric/src/main/java'))
-sourceSets.main.resources.srcDirs(rootProject.file('common/src/main/resources'), rootProject.file('fabric/src/main/resources'))
-
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
     if (!deobfuscated) mappings loom.officialMojangMappings()
