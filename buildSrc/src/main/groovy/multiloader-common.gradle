@@ -60,6 +60,7 @@ processResources {
                        'fabric_version'                  : fabric_version,
                        'fabric_loader_version'           : fabric_loader_version,
                        'neoforge_version'                : neoforge_version,
+                       'neoforge_version_range'          : neoforge_version_range,
                        'neoforge_loader_version_range'   : neoforge_loader_version_range,
                        'java_version'                    : java_version,
                        'mod_name'                        : mod_name,

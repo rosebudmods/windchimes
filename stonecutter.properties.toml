@@ -6,6 +6,7 @@ minecraft_version_range_neoforge = "[1.21,1.21.2)"
 minecraft_version_range_fabric = ">=1.21 <1.21.2"
 fabric_version = "0.102.0+1.21"
 neoforge_version = "21.0.167"
+neoforge_version_range = "[21.0.167,21.2)"
 java_version = 21
 # 1.21.2 | 1.21.3
 [versions."1.21.3"]
@@ -15,6 +16,7 @@ minecraft_version_range_neoforge = "[1.21.2,1.21.4)"
 minecraft_version_range_fabric = ">=1.21.2 <1.21.4"
 fabric_version = "0.114.1+1.21.3"
 neoforge_version = "21.3.96"
+neoforge_version_range = "[21.2.1-beta,21.4)"
 java_version = 21
 # 1.21.4
 [versions."1.21.4"]
@@ -24,6 +26,7 @@ minecraft_version_range_neoforge = "[1.21.4,1.21.5)"
 minecraft_version_range_fabric = ">=1.21.4 <1.21.5"
 fabric_version = "0.119.4+1.21.4"
 neoforge_version = "21.4.157"
+neoforge_version_range = "[21.4.157,21.5)"
 java_version = 21
 # 1.21.5
 [versions."1.21.5"]
@@ -33,6 +36,7 @@ minecraft_version_range_neoforge = "[1.21.5,1.21.6)"
 minecraft_version_range_fabric = ">=1.21.5 <1.21.6"
 fabric_version = "0.128.2+1.21.5"
 neoforge_version = "21.5.97"
+neoforge_version_range = "[21.5.97,21.6)"
 java_version = 21
 # 1.21.6 | 1.21.7 | 1.21.8
 [versions."1.21.8"]
@@ -42,6 +46,7 @@ minecraft_version_range_neoforge = "[1.21.6,1.21.9)"
 minecraft_version_range_fabric = ">=1.21.6 <1.21.9"
 fabric_version = "0.136.1+1.21.8"
 neoforge_version = "21.8.53"
+neoforge_version_range = "[21.6.20-beta,21.9)"
 java_version = 21
 # 1.21.9 | 1.21.10
 [versions."1.21.9"]
@@ -51,6 +56,7 @@ minecraft_version_range_neoforge = "[1.21.9,1.21.11)"
 minecraft_version_range_fabric = ">=1.21.9 <1.21.11"
 fabric_version = "0.134.1+1.21.9"
 neoforge_version = "21.9.16-beta"
+neoforge_version_range = "[21.9.16-beta,21.11)"
 java_version = 21
 # 1.21.11
 [versions."1.21.11"]
@@ -60,6 +66,7 @@ minecraft_version_range_neoforge = "[1.21.11,1.22)"
 minecraft_version_range_fabric = ">=1.21.11 <1.22"
 fabric_version = "0.141.4+1.21.11"
 neoforge_version = "21.11.42"
+neoforge_version_range = "[21.11.42,22)"
 java_version = 21
 # 26.1 | 26.1.1 | 26.1.2
 [versions."26.1"]
@@ -69,6 +76,7 @@ minecraft_version_range_neoforge = "[26.1,26.2)"
 minecraft_version_range_fabric = ">=26.1 <26.2"
 fabric_version = "0.145.1+26.1"
 neoforge_version = "26.1.0.19-beta"
+neoforge_version_range = "[26.1.0.19-beta,26.2)"
 java_version = 25
 # 26.2
 [versions."26.2"]
@@ -78,4 +86,5 @@ minecraft_version_range_neoforge = "[26.2,27)"
 minecraft_version_range_fabric = ">=26.2 <27"
 fabric_version = "0.153.0+26.2"
 neoforge_version = "26.2.0.7-beta"
+neoforge_version_range = "[26.2.0.7-beta,27)"
 java_version = 25
