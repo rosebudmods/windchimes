@@ -5,18 +5,18 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 //? if >= 1.21.2 {
-import net.minecraft.util.RandomSource;
-//?} else {
-/*import net.minecraft.world.level.LevelAccessor;
-*///?}
+/*import net.minecraft.util.RandomSource;
+*///?} else {
+import net.minecraft.world.level.LevelAccessor;
+//?}
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 //? if >= 1.21.2 {
-import net.minecraft.world.level.ScheduledTickAccess;
-//?}
+/*import net.minecraft.world.level.ScheduledTickAccess;
+*///?}
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -54,7 +54,7 @@ public class WindChimeBlock extends BaseEntityBlock {
 
   @Override
   //? if >= 1.21.2 {
-  protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess tickAccess, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {
+  /*protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess tickAccess, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {
     if (level.isEmptyBlock(pos.above())) {
       BlockEntity entity = level.getBlockEntity(pos);
       if (entity != null) {
@@ -64,8 +64,8 @@ public class WindChimeBlock extends BaseEntityBlock {
     }
     return super.updateShape(state, level, tickAccess, pos, direction, neighborPos, neighborState, random);
   }
-  //?} else {
-  /*protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
+  *///?} else {
+  protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
     if (level.isEmptyBlock(pos.above())) {
       BlockEntity entity = level.getBlockEntity(pos);
       if (entity != null) {
@@ -75,7 +75,7 @@ public class WindChimeBlock extends BaseEntityBlock {
     }
     return super.updateShape(state, direction, neighborState, level, pos, neighborPos);
   }
-  *///?}
+  //?}
 
   @Override
   protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
@@ -112,10 +112,10 @@ public class WindChimeBlock extends BaseEntityBlock {
       chime.ticksToNextRing += 4;
     }
     //? if >= 1.21.2 {
-    return InteractionResult.SUCCESS;
-    //?} else {
-    /*return InteractionResult.sidedSuccess(level.isClientSide);
-    *///?}
+    /*return InteractionResult.SUCCESS;
+    *///?} else {
+    return InteractionResult.sidedSuccess(level.isClientSide);
+    //?}
   }
 
   public ChimeType getChimeType() {

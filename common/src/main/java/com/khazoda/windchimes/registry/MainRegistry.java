@@ -66,18 +66,18 @@ public final class MainRegistry {
 
   private static BlockBehaviour.Properties blockSettings(String name, BlockBehaviour.Properties properties) {
     //? if >= 1.21.2 {
-    return properties.setId(ResourceKey.create(Registries.BLOCK, Constants.ID(name)));
-    //?} else {
-    /*return properties;
-    *///?}
+    /*return properties.setId(ResourceKey.create(Registries.BLOCK, Constants.ID(name)));
+    *///?} else {
+    return properties;
+    //?}
   }
 
   private static Item.Properties itemSettings(String name) {
     //? if >= 1.21.2 {
-    return new Item.Properties().setId(ResourceKey.create(Registries.ITEM, Constants.ID(name))).useBlockDescriptionPrefix();
-    //?} else {
-    /*return new Item.Properties();
-    *///?}
+    /*return new Item.Properties().setId(ResourceKey.create(Registries.ITEM, Constants.ID(name))).useBlockDescriptionPrefix();
+    *///?} else {
+    return new Item.Properties();
+    //?}
   }
 
   public interface Reg {

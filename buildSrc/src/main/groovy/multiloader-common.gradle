@@ -1,3 +1,6 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+
 plugins {
     id 'java-library'
 }
@@ -51,6 +54,8 @@ repositories {
     }
 }
 
+def resourceOutput = layout.buildDirectory.dir('resources/main')
+
 processResources {
     var expandProps = ['version'                         : project.version,
                        'group'                           : project.group,
@@ -84,4 +89,27 @@ processResources {
     }
 
     inputs.properties(expandProps)
+
+    doLast {
+        def output = resourceOutput.get().asFile
+        def writeJson = { file, value -> file.setText(JsonOutput.prettyPrint(JsonOutput.toJson(value)), 'UTF-8') }
+
+        if (stonecutter.eval(minecraft_version, '>=1.21.2')) {
+            new File(output, "data/${mod_id}/recipe").eachFileMatch(~/.*\.json/) { file ->
+                def recipe = new JsonSlurper().parse(file)
+                recipe.key.each { symbol, ingredient -> recipe.key[symbol] = ingredient.item ?: "#${ingredient.tag}" }
+                recipe.result.id = recipe.result.remove('item')
+                writeJson(file, recipe)
+            }
+        }
+
+        if (stonecutter.eval(minecraft_version, '>=1.21.4')) {
+            def itemModels = new File(output, "assets/${mod_id}/models/item")
+            def itemDefinitions = new File(output, "assets/${mod_id}/items")
+            itemDefinitions.mkdirs()
+            itemModels.eachFileMatch(~/.*\.json/) { model ->
+                writeJson(new File(itemDefinitions, model.name), [model: [type: 'minecraft:model', model: "${mod_id}:item/${model.name - '.json'}"]])
+            }
+        }
+    }
 }
