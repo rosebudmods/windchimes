@@ -55,25 +55,11 @@ public class WindChimeBlock extends BaseEntityBlock {
   @Override
   //? if >= 1.21.2 {
   /*protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess tickAccess, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {
-    if (level.isEmptyBlock(pos.above())) {
-      BlockEntity entity = level.getBlockEntity(pos);
-      if (entity != null) {
-        entity.setRemoved();
-      }
-      return Blocks.AIR.defaultBlockState();
-    }
-    return super.updateShape(state, level, tickAccess, pos, direction, neighborPos, neighborState, random);
+    return state.canSurvive(level, pos) ? super.updateShape(state, level, tickAccess, pos, direction, neighborPos, neighborState, random) : Blocks.AIR.defaultBlockState();
   }
   *///?} else {
   protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
-    if (level.isEmptyBlock(pos.above())) {
-      BlockEntity entity = level.getBlockEntity(pos);
-      if (entity != null) {
-        entity.setRemoved();
-      }
-      return Blocks.AIR.defaultBlockState();
-    }
-    return super.updateShape(state, direction, neighborState, level, pos, neighborPos);
+    return state.canSurvive(level, pos) ? super.updateShape(state, direction, neighborState, level, pos, neighborPos) : Blocks.AIR.defaultBlockState();
   }
   //?}
 
