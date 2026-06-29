@@ -3,12 +3,12 @@ import groovy.json.JsonSlurper
 
 plugins {
     id 'java-library'
+    id 'stonecutter-replacements'
 }
 
 stonecutter {
     properties.tags(('versions:' + current.version).toString())
 }
-
 def projectName = stonecutter.current.project
 def loader = projectName.substring(projectName.lastIndexOf('-') + 1)
 project.version = mod_version

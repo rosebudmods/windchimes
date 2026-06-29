@@ -1,0 +1,28 @@
+stonecutter {
+    replacements.string {
+        direction = eval(current.version, '>=1.21.5')
+        replace('level.isDay()', 'level.isBrightOutside()')
+    }
+    replacements.string {
+        direction = eval(current.version, '>=1.21.9')
+        replace('level.isClientSide', 'level.isClientSide()')
+    }
+    replacements.string {
+        direction = eval(current.version, '>=1.21.9')
+        replace('.noCollission()', '.noCollision()')
+    }
+
+    def v1_21_11 = eval(current.version, '>=1.21.11')
+    replacements.string {
+        direction = v1_21_11
+        replace('ResourceLocation', 'Identifier')
+    }
+    replacements.string {
+        direction = v1_21_11
+        replace('net.minecraft.client.renderer.RenderType', 'net.minecraft.client.renderer.rendertype.RenderTypes')
+    }
+    replacements.string {
+        direction = v1_21_11
+        replace('RenderType.entityCutout', 'RenderTypes.entityCutout')
+    }
+}

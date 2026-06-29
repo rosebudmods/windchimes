@@ -49,7 +49,7 @@ public class WindChimesNeoForge {
     SOUNDS.register(eventBus);
     BLOCK_ENTITY_TYPES.register(eventBus);
 
-    if (FMLEnvironment.dist == Dist.CLIENT) WindChimesNeoForgeClient.register(eventBus);
+    if (/*? if >= 1.21.9 {*//*FMLEnvironment.getDist()*//*?} else {*/FMLEnvironment.dist/*?}*/ == Dist.CLIENT) WindChimesNeoForgeClient.register(eventBus);
 
     WindChimesCommon.init();
   }
