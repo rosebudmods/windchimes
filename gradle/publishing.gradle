@@ -1,0 +1,72 @@
+def releaseVersion = publish_version.toString()
+def dryRunProvider = providers.gradleProperty('publishDryRun').map { it.toBoolean() }.orElse(false)
+def publishModrinth = providers.gradleProperty('publishModrinth').map { it.toBoolean() }.orElse(true).get()
+def versions = versionTargets.groupBy { it.value }.collectEntries { version, entries ->
+    [(version.toString()): entries.keySet().collect { it.toString() }]
+}
+def targets = versions.collectMany { version, minecraftVersions ->
+    ['fabric', 'neoforge'].collect { loader ->
+        def artifactVersion = "${releaseVersion}+${version}".toString()
+        [
+                version          : version,
+                minecraftVersions: minecraftVersions,
+                loader           : loader,
+                artifactVersion  : artifactVersion,
+                file             : file("export/${mod_id}-${loader}-${artifactVersion}.jar")
+        ]
+    }
+}
+
+publishMods {
+    changelog = providers.environmentVariable('CHANGELOG')
+    version = releaseVersion
+    displayName = "${mod_name} ${releaseVersion}".toString()
+    type = STABLE
+    dryRun = dryRunProvider
+
+    def cfOptions = curseforgeOptions {
+        projectId = '1588208'
+        accessToken = providers.environmentVariable('CURSEFORGE_API_KEY')
+        client = true
+        server = true
+    }
+    def mrOptions = modrinthOptions {
+        projectId = 'I6BSgJNV'
+        accessToken = providers.environmentVariable('MODRINTH_TOKEN')
+    }
+
+    targets.each { target ->
+        def name = "${target.loader}${target.version.replace('.', '_')}".toString()
+        curseforge("curseforge${name.capitalize()}") {
+            from cfOptions
+            file = target.file
+            version = target.artifactVersion
+            displayName = "${mod_name} ${target.artifactVersion}".toString()
+            modLoaders.add(target.loader)
+            minecraftVersions.addAll(target.minecraftVersions)
+            javaVersions.add(target.version.startsWith('1.') ? JavaVersion.VERSION_21 : JavaVersion.VERSION_25)
+            if (target.loader == 'fabric') requires('fabric-api')
+        }
+
+        if (publishModrinth) {
+            modrinth("modrinth${name.capitalize()}") {
+                from mrOptions
+                file = target.file
+                version = target.artifactVersion
+                displayName = "${mod_name} ${target.artifactVersion}".toString()
+                modLoaders.add(target.loader)
+                minecraftVersions.addAll(target.minecraftVersions)
+                if (target.loader == 'fabric') requires('fabric-api')
+            }
+        }
+    }
+
+    github {
+        repository = 'khazoda/windchimes'
+        accessToken = providers.environmentVariable('GITHUB_TOKEN')
+        commitish = 'main'
+        tagName = "v${releaseVersion}".toString()
+        file = targets.first().file
+        additionalFiles.from(targets.drop(1).collect { it.file })
+    }
+}

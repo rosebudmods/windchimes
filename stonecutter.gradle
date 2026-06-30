@@ -4,9 +4,11 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
 plugins {
     id "dev.kikugie.stonecutter"
+    id "me.modmuss50.mod-publish-plugin" version "2.1.1"
 }
 
 apply from: "gradle/stonecutter-targets.gradle"
+apply from: "gradle/publishing.gradle"
 
 def versionTargets = ext.versionTargets
 def devTasks = ext.devTasks
