@@ -64,7 +64,7 @@ publishMods {
     github {
         repository = 'khazoda/windchimes'
         accessToken = providers.environmentVariable('GITHUB_TOKEN')
-        commitish = 'main'
+        commitish = 'stonecutter'
         tagName = "v${releaseVersion}".toString()
         file = targets.first().file
         additionalFiles.from(targets.drop(1).collect { it.file })
