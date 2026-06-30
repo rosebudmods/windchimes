@@ -98,7 +98,6 @@ processResources {
             new File(output, "data/${mod_id}/recipe").eachFileMatch(~/.*\.json/) { file ->
                 def recipe = new JsonSlurper().parse(file)
                 recipe.key.each { symbol, ingredient -> recipe.key[symbol] = ingredient.item ?: "#${ingredient.tag}" }
-                recipe.result.id = recipe.result.remove('item')
                 writeJson(file, recipe)
             }
         }
