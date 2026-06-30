@@ -99,14 +99,19 @@ tasks.register("buildJars") {
         try {
             exportTargets.each { target ->
                 logger.lifecycle("Building ${target}")
+                def libsDir = new File(projectDir, "versions/${target}/build/libs")
+                if (libsDir.exists() && !libsDir.deleteDir()) throw new GradleException("Could not clean ${libsDir}")
                 runGradle([":${target}:${finalJarTask(target)}", "-P", "scTarget=${target}", "--console", "plain"])
-                new File(projectDir, "versions/${target}/build/libs").eachFileMatch(~/.*\.jar/) { jar ->
+                libsDir.eachFileMatch(~/.*\.jar/) { jar ->
                     if (!jar.name.endsWith('-dev.jar') && !jar.name.endsWith('-sources.jar')) {
                         Files.copy(jar.toPath(), new File(exportDir, jar.name).toPath(), REPLACE_EXISTING)
                     }
                 }
             }
         } finally {
+            def otherLoader = targetLoader(originalTarget) == 'fabric' ? 'neoforge' : 'fabric'
+            def otherTarget = "${targetVersion(originalTarget)}-${otherLoader}"
+            runGradle(["stonecutterSwitchTo${otherTarget}", "-P", "scTarget=${otherTarget}", "--console", "plain"])
             runGradle(["stonecutterSwitchTo${originalTarget}", "--console", "plain"])
         }
     }
