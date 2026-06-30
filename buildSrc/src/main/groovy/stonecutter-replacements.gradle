@@ -11,6 +11,18 @@ stonecutter {
         direction = eval(current.version, '>=1.21.9')
         replace('.noCollission()', '.noCollision()')
     }
+    replacements.string {
+        direction = eval(current.version, '>=26.1')
+        replace('level.random', 'level.getRandom()')
+    }
+    replacements.string {
+        direction = eval(current.version, '>=26.1')
+        replace('net.minecraft.client.renderer.state.CameraRenderState', 'net.minecraft.client.renderer.state.level.CameraRenderState')
+    }
+    replacements.string {
+        direction = eval(current.version, '>=26.2')
+        replace('Blocks.COPPER_BLOCK.defaultMapColor()', 'Blocks.COPPER_BLOCK.weathering().unaffected().defaultMapColor()')
+    }
 
     def v1_21_11 = eval(current.version, '>=1.21.11')
     replacements.string {

@@ -46,7 +46,7 @@ public final class ChimeType {
     IRON = new ChimeType(IRON_LOUD_SOUND, IRON_QUIET_SOUND, Constants.ID("textures/iron_chime.png"));
     BAMBOO = new ChimeType(BAMBOO_LOUD_SOUND, BAMBOO_QUIET_SOUND, Constants.ID("textures/bamboo_chime.png"));
     COPPER = new ChimeType(COPPER_LOUD_SOUND, COPPER_QUIET_SOUND, Constants.ID("textures/copper_chime.png"));
-    INVALID = new ChimeType(SoundEvents.PIG_AMBIENT, SoundEvents.PIG_HURT, ResourceLocation.withDefaultNamespace("textures/block/red_concrete.png"));
+    INVALID = new ChimeType(SoundEvents.PIGLIN_AMBIENT, SoundEvents.PIGLIN_HURT, ResourceLocation.withDefaultNamespace("textures/block/red_concrete.png"));
   }
 
   public final SoundEvent loudSound;

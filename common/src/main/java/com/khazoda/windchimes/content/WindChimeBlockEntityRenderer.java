@@ -7,7 +7,9 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+//? if < 1.21.9 {
 import net.minecraft.client.renderer.MultiBufferSource;
+//?}
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -70,7 +72,7 @@ public class WindChimeBlockEntityRenderer implements BlockEntityRenderer<WindChi
     clapper.setPos(8.0F, 14.0F, 8.0F);
   }
 
-  //? if < 1.21.9
+  //? if < 1.21.9 {
   @Override
   public void render(WindChimeBlockEntity entity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay/*? if >=1.21.5 {*//*, Vec3 cameraPos*//*?}*/) {
     Level level = entity.getLevel();
@@ -81,6 +83,7 @@ public class WindChimeBlockEntityRenderer implements BlockEntityRenderer<WindChi
     VertexConsumer consumer = bufferSource.getBuffer(RenderType.entityCutout(entity.getChimeType().textureId));
     renderModel(poseStack, consumer, packedLight, packedOverlay);
   }
+  //?}
 
   //? if >= 1.21.9 {
   /*@Override
