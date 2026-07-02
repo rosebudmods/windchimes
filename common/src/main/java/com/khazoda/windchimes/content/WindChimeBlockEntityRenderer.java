@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 //? if >= 1.21.9 {
@@ -28,6 +29,7 @@ import net.minecraft.resources.ResourceLocation;
 *///?}
 
 public class WindChimeBlockEntityRenderer implements BlockEntityRenderer<WindChimeBlockEntity/*? if >=1.21.9 {*//*, WindChimeBlockEntityRenderer.RenderState*//*?}*/> {
+  private static final float LOOP_TICKS = Mth.TWO_PI * 100.0F;
   private final ModelPart platform;
   private final ModelPart rods1;
   private final ModelPart rods2;
@@ -35,10 +37,8 @@ public class WindChimeBlockEntityRenderer implements BlockEntityRenderer<WindChi
 
   //? if >= 1.21.9 {
   /*public static final class RenderState extends BlockEntityRenderState {
-    private long gameTime;
-    private float partialTick;
-    private int ringingTicks;
-    private float strengthDivisor;
+    private float time;
+    private int ringTicks;
     private ResourceLocation textureId;
   }
   *///?}
@@ -77,7 +77,7 @@ public class WindChimeBlockEntityRenderer implements BlockEntityRenderer<WindChi
   public void render(WindChimeBlockEntity entity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay/*? if >=1.21.5 {*//*, Vec3 cameraPos*//*?}*/) {
     Level level = entity.getLevel();
     if (level != null) {
-      setupModel(level.getGameTime(), partialTick, entity.ringingTicks, entity.strengthDivisor);
+      setupModel((level.getGameTime() % LOOP_TICKS) + partialTick, phase(entity.getBlockPos()), entity.ringTicks);
     }
 
     VertexConsumer consumer = bufferSource.getBuffer(RenderType.entityCutout(entity.getChimeType().textureId));
@@ -95,17 +95,15 @@ public class WindChimeBlockEntityRenderer implements BlockEntityRenderer<WindChi
   public void extractRenderState(WindChimeBlockEntity entity, RenderState state, float partialTick, Vec3 cameraPos, ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
     BlockEntityRenderer.super.extractRenderState(entity, state, partialTick, cameraPos, crumblingOverlay);
     Level level = entity.getLevel();
-    state.gameTime = level == null ? 0L : level.getGameTime();
-    state.partialTick = partialTick;
-    state.ringingTicks = entity.ringingTicks;
-    state.strengthDivisor = entity.strengthDivisor;
+    state.time = ((level == null ? 0L : level.getGameTime()) % LOOP_TICKS) + partialTick;
+    state.ringTicks = entity.ringTicks;
     state.textureId = entity.getChimeType().textureId;
   }
 
   @Override
   public void submit(RenderState state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState cameraState) {
     collector.submitCustomGeometry(poseStack, RenderType.entityCutout(state.textureId), (pose, consumer) -> {
-      setupModel(state.gameTime, state.partialTick, state.ringingTicks, state.strengthDivisor);
+      setupModel(state.time, phase(state.blockPos), state.ringTicks);
       PoseStack submittedPose = new PoseStack();
       submittedPose.last().set(pose);
       renderModel(submittedPose, consumer, state.lightCoords, OverlayTexture.NO_OVERLAY);
@@ -113,23 +111,26 @@ public class WindChimeBlockEntityRenderer implements BlockEntityRenderer<WindChi
   }
   *///?}
 
-  private void setupModel(long gameTime, float partialTick, int ringingTicks, float strengthDivisor) {
-    float correctedTicks = (gameTime % 314.15F) + partialTick;
-    platform.xRot = Mth.sin(correctedTicks * 0.04F) * 0.06F;
-    platform.zRot = Mth.sin(correctedTicks * 0.06F) * 0.04F;
+  private static float phase(BlockPos pos) {
+    return Math.floorMod(pos.getX() * 13 + pos.getY() * 17 + pos.getZ() * 23, 120);
+  }
 
-    float sway = ringingTicks + 1.0F;
-    float strength = ringingTicks / strengthDivisor;
-    float animationTick = ((gameTime % 628.3F) + partialTick - sway) * 0.1F;
-    float animationTick7 = animationTick * 0.7F;
-    float animationTick3 = animationTick * 0.3F;
+  private void setupModel(float time, float phase, int ringTicks) {
+    float platformTime = (time % (LOOP_TICKS / 2.0F)) + phase;
+    platform.xRot = Mth.sin(platformTime * 0.04F) * 0.06F;
+    platform.zRot = Mth.sin(platformTime * 0.06F) * 0.04F;
 
-    rods1.xRot = Mth.sin(animationTick) * 0.07F * strength;
-    rods1.zRot = Mth.cos(animationTick7) * 0.07F * strength;
-    rods1.yRot = Mth.cos(animationTick3) * 0.5F * (strength + 1.0F);
-    rods2.xRot = Mth.cos(animationTick7) * 0.07F * strength;
-    rods2.zRot = Mth.sin(animationTick) * 0.07F * strength;
-    rods2.yRot = Mth.sin(animationTick3) * 0.5F * (strength + 1.0F);
+    float ringTime = (time + phase - ringTicks) * 0.1F;
+    float mediumTime = ringTime * 0.7F;
+    float slowTime = ringTime * 0.3F;
+    float strength = ringTicks / 50.0F;
+
+    rods1.xRot = Mth.sin(ringTime) * 0.07F * strength;
+    rods1.zRot = Mth.cos(mediumTime) * 0.07F * strength;
+    rods1.yRot = Mth.cos(slowTime) * 0.5F * (strength + 1.0F);
+    rods2.xRot = Mth.cos(mediumTime) * 0.07F * strength;
+    rods2.zRot = Mth.sin(ringTime) * 0.07F * strength;
+    rods2.yRot = Mth.sin(slowTime) * 0.5F * (strength + 1.0F);
     clapper.xRot = rods1.xRot + rods2.xRot;
     clapper.zRot = rods1.zRot + rods2.zRot;
     clapper.yRot = rods1.yRot + rods2.yRot;

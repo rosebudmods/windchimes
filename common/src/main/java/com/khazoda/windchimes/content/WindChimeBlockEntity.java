@@ -6,96 +6,69 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.Nullable;
 
 public class WindChimeBlockEntity extends BlockEntity {
-  protected final int tickDisplacement;
-  public int ringingTicks;
-  public float strengthDivisor = 35.0F;
-  protected int ticksToNextRing;
-  protected int baselineRingTicks;
-  @Nullable
-  protected ChimeType cachedType;
-  protected boolean cachedTypeNeedsUpdate;
+  public int ringTicks;
+  private int ringDelay;
+  private long nextUse;
 
   public WindChimeBlockEntity(BlockPos pos, BlockState state) {
     super(MainRegistry.CHIME_BLOCK_ENTITY.get(), pos, state);
-    ringingTicks = 0;
-    ticksToNextRing = 40;
-    baselineRingTicks = 0;
-    cachedType = ((WindChimeBlock) state.getBlock()).getChimeType();
-    cachedTypeNeedsUpdate = true;
-    tickDisplacement = Math.abs(pos.getX() + pos.getY() + pos.getZ()) % 6;
   }
 
   public static void tick(Level level, BlockPos pos, BlockState state, WindChimeBlockEntity chime) {
     if (level.isClientSide) {
-      if (chime.ringingTicks > chime.baselineRingTicks) {
-        chime.ringingTicks--;
-      }
-      if (chime.ringingTicks < chime.baselineRingTicks) {
-        chime.ringingTicks = chime.baselineRingTicks;
-      }
-      if (level.isRaining()) {
-        chime.baselineRingTicks = level.isThundering() ? 26 : 12;
-      } else {
-        chime.baselineRingTicks = level.isDay() ? 0 : 6;
-      }
+      int ambientTicks = level.isThundering() ? 30 : level.isRaining() ? 15 : level.isDay() ? 0 : 5;
+      chime.ringTicks = Math.max(ambientTicks, chime.ringTicks - 1);
       return;
     }
 
-    chime.ticksToNextRing--;
-    if (chime.ticksToNextRing <= 0 && level.getGameTime() % 6 == chime.tickDisplacement) {
-      if (level.isRaining()) {
-        if (level.isThundering()) {
-          chime.ticksToNextRing = level.random.nextInt(200);
-          chime.ring(level.random.nextInt(4) != 0);
-        } else {
-          chime.ticksToNextRing = 100 + level.random.nextInt(400);
-          chime.ring(level.random.nextInt(3) == 0);
-        }
-      } else if (level.isDay()) {
-        chime.ticksToNextRing = 200 + level.random.nextInt(900);
-        chime.ring(level.random.nextInt(5) == 0);
-      } else {
-        chime.ticksToNextRing = 100 + level.random.nextInt(700);
-        chime.ring(level.random.nextInt(5) == 0);
-      }
+    if (chime.ringDelay == 0) {
+      chime.resetRingDelay(level);
+      return;
     }
+    if (--chime.ringDelay > 0) return;
+
+    chime.resetRingDelay(level);
+    boolean loudly = level.isThundering()
+        ? level.random.nextInt(4) != 0
+        : level.random.nextInt(level.isRaining() ? 3 : 5) == 0;
+    chime.ring(loudly);
   }
 
-  public void ring(boolean isLoud) {
-    if (level != null && level.getBlockState(worldPosition.below()).isAir()) {
-      level.blockEvent(worldPosition, level.getBlockState(worldPosition).getBlock(), 1, isLoud ? 1 : 0);
-    }
+  void interact(boolean loudly) {
+    if (level == null || level.isClientSide || level.getGameTime() < nextUse) return;
+    nextUse = level.getGameTime() + 40;
+    resetRingDelay(level);
+    ring(loudly);
+  }
+
+  private void resetRingDelay(Level level) {
+    int minDelay = level.isThundering() ? 60 : level.isRaining() ? 120 : level.isDay() ? 300 : 200;
+    int randomDelay = level.isThundering() ? 140 : level.isRaining() ? 380 : level.isDay() ? 800 : 600;
+    ringDelay = minDelay + level.random.nextInt(randomDelay);
+  }
+
+  private void ring(boolean loudly) {
+    level.blockEvent(worldPosition, getBlockState().getBlock(), 1, loudly ? 1 : 0);
   }
 
   @Override
   public boolean triggerEvent(int type, int data) {
-    if (type == 1 && level != null) {
-      if (data == 0) {
-        ringingTicks = 60;
-        strengthDivisor = 35.0F;
-        level.playSound(null, worldPosition, getChimeType().quietSound, SoundSource.RECORDS,
-            0.9F + level.random.nextFloat() * 0.2F,
-            0.8F + level.random.nextFloat() * 0.4F);
-      } else {
-        ringingTicks = 140;
-        strengthDivisor = 55.0F;
-        level.playSound(null, worldPosition, getChimeType().loudSound, SoundSource.RECORDS,
-            0.9F + level.random.nextFloat() * 0.2F,
-            0.8F + level.random.nextFloat() * 0.4F);
-      }
-      return true;
+    if (type != 1 || level == null) return super.triggerEvent(type, data);
+
+    boolean isLoud = data != 0;
+    if (level.isClientSide) {
+      ringTicks = isLoud ? 140 : 60;
+    } else {
+      level.playSound(null, worldPosition, isLoud ? getChimeType().loudSound : getChimeType().quietSound, SoundSource.BLOCKS,
+          0.9F + level.random.nextFloat() * 0.2F,
+          0.8F + level.random.nextFloat() * 0.4F);
     }
-    return super.triggerEvent(type, data);
+    return true;
   }
 
-  public ChimeType getChimeType() {
-    if (cachedTypeNeedsUpdate) {
-      cachedType = ((WindChimeBlock) getBlockState().getBlock()).getChimeType();
-      cachedTypeNeedsUpdate = false;
-    }
-    return cachedType == null ? ChimeType.INVALID : cachedType;
+  ChimeType getChimeType() {
+    return ((WindChimeBlock) getBlockState().getBlock()).getChimeType();
   }
 }
