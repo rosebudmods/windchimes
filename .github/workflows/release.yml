@@ -67,18 +67,12 @@ jobs:
 
       - run: ./gradlew buildJars --console plain
 
-      - name: Load changelog
-        run: |
-          echo 'CHANGELOG<<EOF' >> "$GITHUB_ENV"
-          cat CHANGELOG.md >> "$GITHUB_ENV"
-          echo 'EOF' >> "$GITHUB_ENV"
-
-      - run: >-
-          ./gradlew publishMods
-          -PpublishDryRun=${{ inputs.dry_run }}
-          -PpublishCurseForge=${{ inputs.publish_curseforge }}
-          -PpublishModrinth=${{ inputs.publish_modrinth }}
-          --console plain
+      - run: |
+          CHANGELOG="$(cat CHANGELOG.md)" ./gradlew publishMods \
+            -PpublishDryRun=${{ inputs.dry_run }} \
+            -PpublishCurseForge=${{ inputs.publish_curseforge }} \
+            -PpublishModrinth=${{ inputs.publish_modrinth }} \
+            --console plain
         env:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
