@@ -3,10 +3,6 @@ name: Release
 on:
   workflow_dispatch:
     inputs:
-      changelog:
-        description: Markdown release notes
-        required: true
-        type: string
       dry_run:
         description: Build without uploading
         default: true
@@ -64,13 +60,18 @@ jobs:
 
       - run: ./gradlew buildJars --console plain
 
+      - name: Load changelog
+        run: |
+          echo 'CHANGELOG<<EOF' >> "$GITHUB_ENV"
+          cat CHANGELOG.md >> "$GITHUB_ENV"
+          echo 'EOF' >> "$GITHUB_ENV"
+
       - run: >-
           ./gradlew publishMods
           -PpublishDryRun=${{ inputs.dry_run }}
           -PpublishModrinth=${{ inputs.publish_modrinth }}
           --console plain
         env:
-          CHANGELOG: ${{ inputs.changelog }}
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

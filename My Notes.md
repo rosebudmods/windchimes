@@ -28,3 +28,5 @@ For example 1.21 and 1.21.1 use the same jar, and uses the 1.21.1 source to buil
 
 #### ToDo Before Committing
 - `./gradlew reset` to set active to the default 1.21 branch
+- check that mod version ahs been set in `gradle.properties` AND `stonecutter.properties.toml`
+- replace changelog markdown in `CHANGELOG.md` with this version's changelog
