@@ -1,5 +1,6 @@
 def releaseVersion = publish_version.toString()
 def dryRunProvider = providers.gradleProperty('publishDryRun').map { it.toBoolean() }.orElse(false)
+def publishCurseForge = providers.gradleProperty('publishCurseForge').map { it.toBoolean() }.orElse(true).get()
 def publishModrinth = providers.gradleProperty('publishModrinth').map { it.toBoolean() }.orElse(true).get()
 def versions = versionTargets.groupBy { it.value }.collectEntries { version, entries ->
     [(version.toString()): entries.keySet().collect { it.toString() }]
@@ -37,15 +38,17 @@ publishMods {
 
     targets.each { target ->
         def name = "${target.loader}${target.version.replace('.', '_')}".toString()
-        curseforge("curseforge${name.capitalize()}") {
-            from cfOptions
-            file = target.file
-            version = target.artifactVersion
-            displayName = "${mod_name} ${target.artifactVersion}".toString()
-            modLoaders.add(target.loader)
-            minecraftVersions.addAll(target.minecraftVersions)
-            javaVersions.add(target.version.startsWith('1.') ? JavaVersion.VERSION_21 : JavaVersion.VERSION_25)
-            if (target.loader == 'fabric') requires('fabric-api')
+        if (publishCurseForge) {
+            curseforge("curseforge${name.capitalize()}") {
+                from cfOptions
+                file = target.file
+                version = target.artifactVersion
+                displayName = "${mod_name} ${target.artifactVersion}".toString()
+                modLoaders.add(target.loader)
+                minecraftVersions.addAll(target.minecraftVersions)
+                javaVersions.add(target.version.startsWith('1.') ? JavaVersion.VERSION_21 : JavaVersion.VERSION_25)
+                if (target.loader == 'fabric') requires('fabric-api')
+            }
         }
 
         if (publishModrinth) {

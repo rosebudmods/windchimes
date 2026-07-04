@@ -7,6 +7,10 @@ on:
         description: Build without uploading
         default: true
         type: boolean
+      publish_curseforge:
+        description: Publish to CurseForge
+        default: true
+        type: boolean
       publish_modrinth:
         description: Publish to Modrinth
         default: true
@@ -31,12 +35,15 @@ jobs:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUBLISH_CURSEFORGE: ${{ inputs.publish_curseforge }}
           PUBLISH_MODRINTH: ${{ inputs.publish_modrinth }}
         run: |
-          : "${CURSEFORGE_API_KEY:?CURSEFORGE_API_KEY is not configured}"
-          curl --fail --silent --show-error \
-            --header "x-api-token: ${CURSEFORGE_API_KEY}" \
-            https://minecraft.curseforge.com/api/game/version-types > /dev/null
+          if [[ "${PUBLISH_CURSEFORGE}" == "true" ]]; then
+            : "${CURSEFORGE_API_KEY:?CURSEFORGE_API_KEY is not configured}"
+            curl --fail --silent --show-error \
+              --header "x-api-token: ${CURSEFORGE_API_KEY}" \
+              https://minecraft.curseforge.com/api/game/version-types > /dev/null
+          fi
 
           if [[ "${PUBLISH_MODRINTH}" == "true" ]]; then
             : "${MODRINTH_TOKEN:?MODRINTH_TOKEN is not configured}"
@@ -69,6 +76,7 @@ jobs:
       - run: >-
           ./gradlew publishMods
           -PpublishDryRun=${{ inputs.dry_run }}
+          -PpublishCurseForge=${{ inputs.publish_curseforge }}
           -PpublishModrinth=${{ inputs.publish_modrinth }}
           --console plain
         env:
