@@ -4,6 +4,7 @@ import com.khazoda.windchimes.registry.MainRegistry;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
 //? if >= 1.21.2 {
 /*import net.minecraft.util.RandomSource;
 *///?} else {
@@ -56,13 +57,12 @@ public class WindChimeBlock extends BaseEntityBlock {
 
   @Override
   protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-    if (level.getBlockEntity(pos) instanceof WindChimeBlockEntity chime) {
-      chime.interact(!player.isShiftKeyDown());
-    }
+    float direction = (float) Mth.atan2(hit.getLocation().z - player.getZ(), hit.getLocation().x - player.getX());
+    boolean rang = level.getBlockEntity(pos) instanceof WindChimeBlockEntity chime && chime.tryRing(!player.isShiftKeyDown(), direction);
     //? if >= 1.21.2 {
-    /*return InteractionResult.SUCCESS;
+    /*return rang ? InteractionResult.SUCCESS_SERVER : InteractionResult.CONSUME;
     *///?} else {
-    return InteractionResult.sidedSuccess(level.isClientSide);
+    return rang ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
     //?}
   }
 

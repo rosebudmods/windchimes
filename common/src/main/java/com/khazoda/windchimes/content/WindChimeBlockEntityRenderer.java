@@ -1,7 +1,6 @@
 package com.khazoda.windchimes.content;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
@@ -13,7 +12,6 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 //? if >= 1.21.9 {
@@ -29,61 +27,59 @@ import net.minecraft.resources.ResourceLocation;
 *///?}
 
 public class WindChimeBlockEntityRenderer implements BlockEntityRenderer<WindChimeBlockEntity/*? if >=1.21.9 {*//*, WindChimeBlockEntityRenderer.RenderState*//*?}*/> {
-  private static final float LOOP_TICKS = Mth.TWO_PI * 100.0F;
+  private static final float AMBIENT_LOOP_TICKS = Mth.TWO_PI * 100.0F;
+  private static final float[] ROD_SWING_SPEEDS = {0.75F, 1.05F, 0.90F, 0.85F};
+  private static final float[] ROD_HEIGHTS = {16.0F, 17.5F, 16.5F, 17.0F};
+  private final ModelPart model;
   private final ModelPart platform;
-  private final ModelPart rods1;
-  private final ModelPart rods2;
+  private final ModelPart[] rods;
   private final ModelPart clapper;
-
   //? if >= 1.21.9 {
-  /*public static final class RenderState extends BlockEntityRenderState {
-    private float time;
-    private int ringTicks;
-    private ResourceLocation textureId;
-  }
+  /*private final PoseStack submittedPose = new PoseStack();
   *///?}
 
   public WindChimeBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
-    MeshDefinition platformMesh = new MeshDefinition();
-    PartDefinition platformRoot = platformMesh.getRoot();
-    platformRoot.addOrReplaceChild("hanger", CubeListBuilder.create().texOffs(18, 3).addBox(-0.5F, -1.0F, -0.5F, 1.0F, 1.0F, 1.0F), PartPose.ZERO);
-    platformRoot.addOrReplaceChild("platform", CubeListBuilder.create().texOffs(0, 0).addBox(-3.0F, -2.0F, -3.0F, 6.0F, 1.0F, 6.0F), PartPose.ZERO);
-    platform = platformRoot.bake(32, 32);
-    platform.setPos(8.0F, 16.0F, 8.0F);
-
-    MeshDefinition rods1Mesh = new MeshDefinition();
-    PartDefinition rods1Root = rods1Mesh.getRoot();
-    rods1Root.addOrReplaceChild("rod1", CubeListBuilder.create().texOffs(0, 7).addBox(-2.0F, -21.0F, -2.0F, 1.0F, 15.0F, 1.0F), PartPose.ZERO);
-    rods1Root.addOrReplaceChild("rod2", CubeListBuilder.create().texOffs(12, 7).addBox(1.0F, -15.0F, 1.0F, 1.0F, 9.0F, 1.0F), PartPose.ZERO);
-    rods1 = rods1Root.bake(32, 32);
-    rods1.setPos(8.0F, 14.0F, 8.0F);
-
-    MeshDefinition rods2Mesh = new MeshDefinition();
-    PartDefinition rods2Root = rods2Mesh.getRoot();
-    rods2Root.addOrReplaceChild("rod3", CubeListBuilder.create().texOffs(8, 7).addBox(1.0F, -17.0F, -2.0F, 1.0F, 11.0F, 1.0F), PartPose.ZERO);
-    rods2Root.addOrReplaceChild("rod4", CubeListBuilder.create().texOffs(4, 7).addBox(-2.0F, -19.0F, 1.0F, 1.0F, 13.0F, 1.0F), PartPose.ZERO);
-    rods2 = rods2Root.bake(32, 32);
-    rods2.setPos(8.0F, 14.0F, 8.0F);
-
-    MeshDefinition clapperMesh = new MeshDefinition();
-    PartDefinition clapperRoot = clapperMesh.getRoot();
-    clapperRoot.addOrReplaceChild("clapper", CubeListBuilder.create().texOffs(18, 0).addBox(-1.0F, -13.0F, -1.0F, 2.0F, 1.0F, 2.0F), PartPose.ZERO);
-    clapper = clapperRoot.bake(32, 32);
-    clapper.setPos(8.0F, 14.0F, 8.0F);
+    MeshDefinition mesh = new MeshDefinition();
+    PartDefinition root = mesh.getRoot();
+    root.addOrReplaceChild("platform", CubeListBuilder.create().texOffs(18, 3)
+        .addBox(-0.5F, -1.0F, -0.5F, 1.0F, 1.0F, 1.0F).texOffs(0, 0)
+        .addBox(-3.0F, -2.0F, -3.0F, 6.0F, 1.0F, 6.0F), PartPose.offset(8.0F, 16.0F, 8.0F));
+    root.addOrReplaceChild("rod1", CubeListBuilder.create().texOffs(0, 7)
+        .addBox(-0.5F, -21.0F, -0.5F, 1.0F, 15.0F, 1.0F), PartPose.offset(6.5F, ROD_HEIGHTS[0], 6.5F));
+    root.addOrReplaceChild("rod2", CubeListBuilder.create().texOffs(12, 7)
+        .addBox(-0.5F, -15.0F, -0.5F, 1.0F, 9.0F, 1.0F), PartPose.offset(9.5F, ROD_HEIGHTS[1], 9.5F));
+    root.addOrReplaceChild("rod3", CubeListBuilder.create().texOffs(8, 7)
+        .addBox(-0.5F, -17.0F, -0.5F, 1.0F, 11.0F, 1.0F), PartPose.offset(9.5F, ROD_HEIGHTS[2], 6.5F));
+    root.addOrReplaceChild("rod4", CubeListBuilder.create().texOffs(4, 7)
+        .addBox(-0.5F, -19.0F, -0.5F, 1.0F, 13.0F, 1.0F), PartPose.offset(6.5F, ROD_HEIGHTS[3], 9.5F));
+    root.addOrReplaceChild("clapper", CubeListBuilder.create().texOffs(18, 0)
+        .addBox(-1.0F, -13.0F, -1.0F, 2.0F, 1.0F, 2.0F), PartPose.offset(8.0F, 17.0F, 8.0F));
+    model = root.bake(32, 32);
+    platform = model.getChild("platform");
+    clapper = model.getChild("clapper");
+    rods = new ModelPart[4];
+    for (int i = 0; i < rods.length; i++) rods[i] = model.getChild("rod" + (i + 1));
   }
 
   //? if < 1.21.9 {
   @Override
   public void render(WindChimeBlockEntity entity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay/*? if >=1.21.5 {*//*, Vec3 cameraPos*//*?}*/) {
-    Level level = entity.getLevel();
-    if (level != null) {
-      setupModel((level.getGameTime() % LOOP_TICKS) + partialTick, phase(entity.getBlockPos()), entity.ringTicks);
-    }
-
-    VertexConsumer consumer = bufferSource.getBuffer(RenderType.entityCutout(entity.getChimeType().textureId));
-    renderModel(poseStack, consumer, packedLight, packedOverlay);
+    int heightPermutation = Math.floorMod(entity.getBlockPos().hashCode(), 24);
+    animateModel(ambientTime(entity, partialTick), entity.getSwingTime(partialTick), entity.getSwingStrength(partialTick), entity.ringDirection, entity.seedForAnimation, heightPermutation);
+    model.render(poseStack, bufferSource.getBuffer(RenderType.entityCutout(entity.getChimeType().textureId)), packedLight, packedOverlay);
   }
   //?}
+
+  //? if >= 1.21.9 {
+  /*public static final class RenderState extends BlockEntityRenderState {
+    private ResourceLocation textureId;
+    private float ambientTime;
+    private float swingTime;
+    private float swingStrength;
+    private float ringDirection;
+    private int seedForAnimation;
+  }
+  *///?}
 
   //? if >= 1.21.9 {
   /*@Override
@@ -94,52 +90,65 @@ public class WindChimeBlockEntityRenderer implements BlockEntityRenderer<WindChi
   @Override
   public void extractRenderState(WindChimeBlockEntity entity, RenderState state, float partialTick, Vec3 cameraPos, ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
     BlockEntityRenderer.super.extractRenderState(entity, state, partialTick, cameraPos, crumblingOverlay);
-    Level level = entity.getLevel();
-    state.time = ((level == null ? 0L : level.getGameTime()) % LOOP_TICKS) + partialTick;
-    state.ringTicks = entity.ringTicks;
+    state.ambientTime = ambientTime(entity, partialTick);
+    state.swingTime = entity.getSwingTime(partialTick);
+    state.swingStrength = entity.getSwingStrength(partialTick);
+    state.ringDirection = entity.ringDirection;
+    state.seedForAnimation = entity.seedForAnimation;
     state.textureId = entity.getChimeType().textureId;
   }
 
   @Override
   public void submit(RenderState state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState cameraState) {
     collector.submitCustomGeometry(poseStack, RenderType.entityCutout(state.textureId), (pose, consumer) -> {
-      setupModel(state.time, phase(state.blockPos), state.ringTicks);
-      PoseStack submittedPose = new PoseStack();
+      int heightPermutation = Math.floorMod(state.blockPos.hashCode(), 24);
+      animateModel(state.ambientTime, state.swingTime, state.swingStrength, state.ringDirection, state.seedForAnimation, heightPermutation);
       submittedPose.last().set(pose);
-      renderModel(submittedPose, consumer, state.lightCoords, OverlayTexture.NO_OVERLAY);
+      model.render(submittedPose, consumer, state.lightCoords, OverlayTexture.NO_OVERLAY);
     });
   }
   *///?}
 
-  private static float phase(BlockPos pos) {
-    return Math.floorMod(pos.getX() * 13 + pos.getY() * 17 + pos.getZ() * 23, 120);
+  private static float ambientTime(WindChimeBlockEntity entity, float partialTick) {
+    Level level = entity.getLevel();
+    return ((level == null ? 0L : level.getGameTime()) % AMBIENT_LOOP_TICKS) + partialTick + WindChimeBlockEntity.animationOffset(entity.getBlockPos());
   }
 
-  private void setupModel(float time, float phase, int ringTicks) {
-    float platformTime = (time % (LOOP_TICKS / 2.0F)) + phase;
-    platform.xRot = Mth.sin(platformTime * 0.04F) * 0.06F;
-    platform.zRot = Mth.sin(platformTime * 0.06F) * 0.04F;
+  private void animateModel(float ambientTime, float swingTime, float swingStrength, float direction, int seed, int heightPermutation) {
+    float platformSwing = pendulumSwing(swingTime, 0.7F) * 0.025F * swingStrength;
+    platform.xRot = Mth.sin(ambientTime * 0.02F) * 0.03F + platformSwing * Mth.cos(direction);
+    platform.zRot = Mth.sin(ambientTime * 0.03F) * 0.02F + platformSwing * Mth.sin(direction);
 
-    float ringTime = (time + phase - ringTicks) * 0.1F;
-    float mediumTime = ringTime * 0.7F;
-    float slowTime = ringTime * 0.3F;
-    float strength = ringTicks / 50.0F;
+    /* Rod heights randomized between 4 preset heights in ROD_HEIGHTS for 24 possible combinations */
+    for (int i = 0; i < rods.length; i++) rods[i].y = ROD_HEIGHTS[i];
+    for (int i = 0; i < rods.length - 1; i++) {
+      int swap = i + heightPermutation % (rods.length - i);
+      float height = rods[i].y;
+      rods[i].y = rods[swap].y;
+      rods[swap].y = height;
+      heightPermutation /= rods.length - i;
+    }
+    for (int i = 0; i < rods.length; i++) animateRod(rods[i], swingTime, direction, seed, i, swingStrength);
 
-    rods1.xRot = Mth.sin(ringTime) * 0.07F * strength;
-    rods1.zRot = Mth.cos(mediumTime) * 0.07F * strength;
-    rods1.yRot = Mth.cos(slowTime) * 0.5F * (strength + 1.0F);
-    rods2.xRot = Mth.cos(mediumTime) * 0.07F * strength;
-    rods2.zRot = Mth.sin(ringTime) * 0.07F * strength;
-    rods2.yRot = Mth.sin(slowTime) * 0.5F * (strength + 1.0F);
-    clapper.xRot = rods1.xRot + rods2.xRot;
-    clapper.zRot = rods1.zRot + rods2.zRot;
-    clapper.yRot = rods1.yRot + rods2.yRot;
+    float swing = pendulumSwing(swingTime, 0.9F) * 0.055F * swingStrength;
+    float crossSwing = pendulumSwing(swingTime, 1.8F) * 0.006F * swingStrength;
+    clapper.xRot = swing * Mth.cos(direction) - crossSwing * Mth.sin(direction);
+    clapper.zRot = swing * Mth.sin(direction) + crossSwing * Mth.cos(direction);
   }
 
-  private void renderModel(PoseStack poseStack, VertexConsumer consumer, int packedLight, int packedOverlay) {
-    platform.render(poseStack, consumer, packedLight, packedOverlay);
-    rods1.render(poseStack, consumer, packedLight, packedOverlay);
-    rods2.render(poseStack, consumer, packedLight, packedOverlay);
-    clapper.render(poseStack, consumer, packedLight, packedOverlay);
+  private static void animateRod(ModelPart rod, float time, float direction, int seed, int index, float swingStrength) {
+    float variation = Mth.sin(seed + index * 2.0F);
+    float staggeredTime = Math.max(0.0F, time - index * 0.15F);
+    float swing = pendulumSwing(staggeredTime, ROD_SWING_SPEEDS[index] + variation * 0.07F) * (0.08F + variation * 0.007F) * swingStrength;
+    float rodDirection = direction + (index - 1.5F) * 0.12F;
+    rod.xRot = swing * Mth.cos(rodDirection);
+    rod.zRot = swing * Mth.sin(rodDirection);
+    float spinRamp = staggeredTime / (staggeredTime + 0.4F);
+    rod.yRot = Mth.sin(staggeredTime * (0.3F + variation * 0.08F) + seed + index)
+        * (0.08F + swingStrength * (0.05F + variation * 0.01F)) * spinRamp * spinRamp;
+  }
+
+  private static float pendulumSwing(float time, float speed) {
+    return Mth.sin(time * speed) * time / (time + 0.4F);
   }
 }
