@@ -25,6 +25,12 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+//? if >= 1.21.2 {
+/*import net.minecraft.world.level.redstone.Orientation;
+*///?}
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -32,11 +38,13 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class WindChimeBlock extends BaseEntityBlock {
   public static final MapCodec<WindChimeBlock> CODEC = simpleCodec(properties -> new WindChimeBlock(ChimeType.INVALID, properties));
   private static final VoxelShape SHAPE = Block.box(4.0, 8.0, 4.0, 12.0, 16.0, 12.0);
+  private static final BooleanProperty POWERED = BlockStateProperties.POWERED;
   private final ChimeType chimeType;
 
   public WindChimeBlock(ChimeType chimeType, Properties properties) {
     super(properties);
     this.chimeType = chimeType;
+    registerDefaultState(defaultBlockState().setValue(POWERED, false));
   }
 
   @Override
@@ -66,6 +74,41 @@ public class WindChimeBlock extends BaseEntityBlock {
     //?}
   }
 
+  @Override
+  protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, /*? if >=1.21.2 {*//*Orientation orientation*//*?} else {*/BlockPos neighborPos/*?}*/, boolean movedByPiston) {
+    updatePower(state, level, pos);
+  }
+
+  private void updatePower(BlockState state, Level level, BlockPos pos) {
+    boolean powered = level.hasNeighborSignal(pos);
+    if (powered == state.getValue(POWERED)) return;
+    level.setBlock(pos, state.setValue(POWERED, powered), Block.UPDATE_CLIENTS);
+    if (!powered || !(level.getBlockEntity(pos) instanceof WindChimeBlockEntity chime)) return;
+
+    Direction source = Direction.UP;
+    int strongestSignal = level.getBestNeighborSignal(pos);
+    for (Direction direction : Direction.values()) {
+      if (level.getSignal(pos.relative(direction), direction) == strongestSignal) {
+        source = direction;
+        break;
+      }
+    }
+    float direction = source.getStepY() == 0
+        ? (float) Mth.atan2(-source.getStepZ(), -source.getStepX())
+        : level.random.nextFloat() * Mth.TWO_PI;
+    chime.tryRing(true, direction);
+  }
+
+  @Override
+  protected boolean hasAnalogOutputSignal(BlockState state) {
+    return true;
+  }
+
+  @Override
+  protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos/*? if >=1.21.9 {*//*, Direction direction*//*?}*/) {
+    return level.getBlockEntity(pos) instanceof WindChimeBlockEntity chime && chime.isRinging() ? 15 : 0;
+  }
+
   ChimeType getChimeType() {
     return chimeType;
   }
@@ -78,6 +121,11 @@ public class WindChimeBlock extends BaseEntityBlock {
   @Override
   protected MapCodec<? extends WindChimeBlock> codec() {
     return CODEC;
+  }
+
+  @Override
+  protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+    builder.add(POWERED);
   }
 
   @Override

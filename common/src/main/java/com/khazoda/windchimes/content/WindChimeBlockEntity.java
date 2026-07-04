@@ -33,22 +33,21 @@ public class WindChimeBlockEntity extends BlockEntity {
       return;
     }
 
-    if (chime.ringTicks > 0) chime.ringTicks--;
+    if (chime.ringTicks > 0 && --chime.ringTicks == 0) level.updateNeighbourForOutputSignal(pos, state.getBlock());
     if (chime.ambientDelay == 0) chime.resetAmbientDelay(level);
     else if (--chime.ambientDelay == 0) {
       chime.resetAmbientDelay(level);
       boolean loud = level.isThundering() ? level.random.nextInt(4) != 0 : level.random.nextInt(level.isRaining() ? 3 : 5) == 0;
-      chime.sendRingEvent(level, loud, 0, 0);
+      chime.ring(level, loud, 0, 0);
     }
   }
 
   boolean tryRing(boolean loud, float direction) {
     Level level = this.level;
     if (level == null || level.isClientSide || ringTicks > 0) return false;
-    ringTicks = loud ? 140 : 60;
     resetAmbientDelay(level);
     int directionStep = Mth.floor((direction + Mth.PI / 2.0F) * DIRECTION_STEPS / Mth.TWO_PI) + level.random.nextIntBetweenInclusive(-2, 2);
-    sendRingEvent(level, loud, Mth.positiveModulo(directionStep, DIRECTION_STEPS) + 1, level.random.nextIntBetweenInclusive(1, 255));
+    ring(level, loud, Mth.positiveModulo(directionStep, DIRECTION_STEPS) + 1, level.random.nextIntBetweenInclusive(1, 255));
     return true;
   }
 
@@ -58,7 +57,9 @@ public class WindChimeBlockEntity extends BlockEntity {
     ambientDelay = min + level.random.nextInt(range);
   }
 
-  private void sendRingEvent(Level level, boolean loud, int direction, int seed) {
+  private void ring(Level level, boolean loud, int direction, int seed) {
+    ringTicks = loud ? 140 : 60;
+    level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
     level.blockEvent(worldPosition, getBlockState().getBlock(), seed, (direction << 1) | (loud ? 1 : 0));
   }
 
@@ -80,6 +81,10 @@ public class WindChimeBlockEntity extends BlockEntity {
 
   ChimeType getChimeType() {
     return ((WindChimeBlock) getBlockState().getBlock()).getChimeType();
+  }
+
+  boolean isRinging() {
+    return ringTicks > 0;
   }
 
   float getSwingStrength(float partialTick) {
