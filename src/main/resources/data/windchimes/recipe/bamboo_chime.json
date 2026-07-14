@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "###", "iSi", "iOi"
+  ],
+  "key": {
+    "#": "minecraft:stick",
+    "S": "minecraft:string",
+    "i": "minecraft:bamboo",
+    "O": "#minecraft:wooden_buttons"
+  },
+  "result": {
+    "id": "windchimes:bamboo_chime",
+    "count": 1
+  }
+}

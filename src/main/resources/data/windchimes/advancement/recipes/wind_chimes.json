@@ -1,0 +1,22 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_string": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:string"
+          }
+        ]
+      }
+    }
+  },
+  "rewards": {
+    "recipes": [
+      "windchimes:iron_chime",
+      "windchimes:copper_chime",
+      "windchimes:bamboo_chime"
+    ]
+  }
+}

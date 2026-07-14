@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "###", "SSS", "iOi"
+  ],
+  "key": {
+    "#": "minecraft:stick",
+    "S": "minecraft:string",
+    "i": "minecraft:copper_ingot",
+    "O": "#minecraft:wooden_buttons"
+  },
+  "result": {
+    "id": "windchimes:copper_chime",
+    "count": 1
+  }
+}
