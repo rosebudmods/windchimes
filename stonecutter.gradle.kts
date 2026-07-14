@@ -33,8 +33,18 @@ stonecutter parameters {
             replace("RenderType.entityCutout", "RenderTypes.entityCutout")
         }
 
+        string(current.parsed >= "1.21.5") {
+            replace("level.isDay()", "level.isBrightOutside()")
+        }
+
+        string(current.parsed >= "1.21.9") {
+            replace("level.isClientSide", "level.isClientSide()")
+            replace(".noCollission()", ".noCollision()")
+            replace("FMLEnvironment.dist", "FMLEnvironment.getDist()")
+        }
+
         string(current.parsed >= "26.1") {
-            replace("classTweaker v2 named", "classTweaker v2 official")
+            replace("level.random", "level.getRandom()")
             replace("renderer.state.CameraRenderState", "renderer.state.level.CameraRenderState")
         }
     }
