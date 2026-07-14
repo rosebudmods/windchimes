@@ -39,11 +39,17 @@ stonecutter {
         }
 
         // See https://stonecutter.kikugie.dev/wiki/start/#choosing-minecraft-versions
-        match("1.21.1", "fabric", "neoforge")
+        match("1.21", "fabric", "neoforge")
+        match("1.21.3", "fabric", "neoforge")
+        match("1.21.4", "fabric", "neoforge")
+        match("1.21.5", "fabric", "neoforge")
+        match("1.21.8", "fabric", "neoforge")
+        match("1.21.9", "fabric", "neoforge")
         match("1.21.11", "fabric", "neoforge")
-        match("26.2.x", "fabric", "neoforge", version = "26.2")
-        vcsVersion = "26.2.x-fabric"
+        match("26.1", "fabric", "neoforge")
+        match("26.2", "fabric", "neoforge")
+        vcsVersion = "1.21-fabric"
     }
 }
 
-rootProject.name = "Template Multiloader"
+rootProject.name = "windchimes"

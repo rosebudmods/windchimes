@@ -1,3 +1,5 @@
+import windchimes.gradle.rewriteLegacyRecipeIngredients
+
 plugins {
     // This plugin applies the correct loom variant based on the Minecraft version
     id("dev.kikugie.loom-back-compat")
@@ -8,16 +10,13 @@ version = "${property("mod.version")}+${sc.current.version}"
 base.archivesName = "${property("mod.id") as String}-fabric"
 
 val requiredJava: JavaVersion = when {
-    sc.current.parsed >= "26.1" -> JavaVersion.VERSION_25
-    sc.current.parsed >= "1.20.5" -> JavaVersion.VERSION_21
-    sc.current.parsed >= "1.18" -> JavaVersion.VERSION_17
-    sc.current.parsed >= "1.17" -> JavaVersion.VERSION_16
-    else -> JavaVersion.VERSION_1_8
+    sc.current.version.startsWith("1.21") -> JavaVersion.VERSION_21
+    else -> JavaVersion.VERSION_25
 }
-
-// This can be used for publishing on Modrinth and Curseforge
-val compatibleVersions: List<String> = sc.properties.rawOrNull("mod", "mc_releases")
-    ?.asList().orEmpty().map { it.toString() }
+val requiredJavaLauncher = javaToolchains.launcherFor {
+    vendor = JvmVendorSpec.ADOPTIUM
+    languageVersion = JavaLanguageVersion.of(requiredJava.majorVersion)
+}
 
 repositories {
     /**
@@ -33,10 +32,6 @@ repositories {
 }
 
 dependencies {
-    /**
-     * Fetches only the required Fabric API modules to not waste time downloading all of them for each version.
-     * @see <a href="https://github.com/FabricMC/fabric">List of Fabric API modules</a>
-     */
     fun fapi(vararg modules: String) {
         for (it in modules) modImplementation(fabricApi.module(it, sc.properties["deps.fabric_api"]))
     }
@@ -47,15 +42,19 @@ dependencies {
 
     // Use `mod{dependency type}` even on 26.1+ - loom-back-compat converts them
     modImplementation("net.fabricmc:fabric-loader:${property("deps.fabric_loader")}")
-    fapi("fabric-lifecycle-events-v1", "fabric-resource-loader-v0", "fabric-content-registries-v0", "fabric-registry-sync-v0")
+    fapi(
+        "fabric-lifecycle-events-v1",
+        "fabric-resource-loader-v0",
+        "fabric-content-registries-v0",
+        "fabric-registry-sync-v0",
+        "fabric-object-builder-api-v1",
+        "fabric-rendering-v1"
+    )
+    if (sc.current.parsed >= "26.1") fapi("fabric-creative-tab-api-v1")
 }
 
 loom {
     fabricModJsonPath = rootProject.file("src/main/resources/fabric.mod.json") // Useful for interface injection
-    accessWidenerPath = sc.process(
-        rootProject.file("src/main/resources/template.ct"),
-        "build/processed.ct"
-    )
 
     decompilerOptions.named("vineflower") {
         options.put("mark-corresponding-synthetics", "1") // Adds names to lambdas - useful for mixins
@@ -81,6 +80,10 @@ java {
 }
 
 tasks {
+    withType<JavaExec>().configureEach {
+        javaLauncher = requiredJavaLauncher
+    }
+
     processResources {
         fun MutableMap<String, String>.register(key: String, property: String) {
             val value: String = sc.properties[property]
@@ -93,14 +96,23 @@ tasks {
             register("name", "mod.name")
             register("version", "mod.version")
             register("minecraft", "mod.mc_compat")
+            register("description", "mod.description")
+            register("authors", "mod.authors")
+            register("license", "mod.license")
+            register("homepage", "mod.homepage")
+            register("sources", "mod.sources")
+            register("issues", "mod.issues")
+            register("discord", "mod.discord")
+            register("fabric_loader", "deps.fabric_loader")
         }
 
         filesMatching("fabric.mod.json") { expand(props) }
 
-        val mixinJava = "JAVA_${requiredJava.majorVersion}"
-        filesMatching("*.mixins.json") { expand("java" to mixinJava) }
-
         exclude("META-INF/neoforge.mods.toml")
+
+        if (sc.current.parsed < "1.21.2") doLast {
+            rewriteLegacyRecipeIngredients(destinationDir, project.property("mod.id") as String)
+        }
     }
 
     register<Copy>("buildAndCollect") {

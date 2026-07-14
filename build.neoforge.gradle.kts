@@ -1,5 +1,7 @@
+import windchimes.gradle.rewriteLegacyRecipeIngredients
+
 plugins {
-    id("net.neoforged.moddev") version "2.0.140"
+    id("net.neoforged.moddev") version "2.0.141"
     id("neoforge-mutex")
 }
 
@@ -7,11 +9,12 @@ version = "${property("mod.version")}+${sc.current.version}"
 base.archivesName = "${property("mod.id") as String}-neoforge"
 
 val requiredJava = when {
-    sc.current.parsed >= "26.1" -> JavaVersion.VERSION_25
-    sc.current.parsed >= "1.20.5" -> JavaVersion.VERSION_21
-    sc.current.parsed >= "1.18" -> JavaVersion.VERSION_17
-    sc.current.parsed >= "1.17" -> JavaVersion.VERSION_16
-    else -> JavaVersion.VERSION_1_8
+    sc.current.version.startsWith("1.21") -> JavaVersion.VERSION_21
+    else -> JavaVersion.VERSION_25
+}
+val requiredJavaLauncher = javaToolchains.launcherFor {
+    vendor = JvmVendorSpec.ADOPTIUM
+    languageVersion = JavaLanguageVersion.of(requiredJava.majorVersion)
 }
 
 repositories {
@@ -35,7 +38,7 @@ neoForge {
     version = property("deps.neo_loader") as String
 
     mods {
-        register("template") {
+        register(property("mod.id") as String) {
             sourceSet(sourceSets.main.get())
         }
     }
@@ -65,6 +68,10 @@ java {
 }
 
 tasks {
+    withType<JavaExec>().configureEach {
+        javaLauncher = requiredJavaLauncher
+    }
+
     processResources {
         fun MutableMap<String, String>.register(key: String, property: String) {
             val value: String = sc.properties[property]
@@ -77,14 +84,21 @@ tasks {
             register("name", "mod.name")
             register("version", "mod.version")
             register("minecraft", "mod.mc_compat")
+            register("description", "mod.description")
+            register("authors", "mod.authors")
+            register("license", "mod.license")
+            register("homepage", "mod.homepage")
+            register("issues", "mod.issues")
+            register("neoforge_loader", "deps.neoforge_loader")
         }
 
         filesMatching("META-INF/neoforge.mods.toml") { expand(props) }
 
-        val mixinJava = "JAVA_${requiredJava.majorVersion}"
-        filesMatching("*.mixins.json") { expand("java" to mixinJava) }
-
         exclude("fabric.mod.json", "*.ct", "*.classtweaker")
+
+        if (sc.current.parsed < "1.21.2") doLast {
+            rewriteLegacyRecipeIngredients(destinationDir, project.property("mod.id") as String)
+        }
     }
 
     named("createMinecraftArtifacts") {
