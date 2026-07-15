@@ -49,7 +49,7 @@ stonecutter parameters {
 
 val versionTargets = stonecutter.tree.nodes.map { node ->
     node.metadata.version to stonecutter.properties.raw(node.metadata.version, "mod", "mc_releases").asList().map { it.toString() }
-}
+}.distinctBy { it.first }
 
 val modId = property("mod.id") as String
 val modName = property("mod.name") as String
