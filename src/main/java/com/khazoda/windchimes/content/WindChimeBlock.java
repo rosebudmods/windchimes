@@ -44,7 +44,13 @@ public class WindChimeBlock extends BaseEntityBlock {
 
   @Override
   protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
-    return !level.isEmptyBlock(pos.above()) && level.isEmptyBlock(pos.below());
+    return !level.isEmptyBlock(pos.above()) && hasRoomBelow(level, pos);
+  }
+
+  private static boolean hasRoomBelow(LevelReader level, BlockPos pos) {
+    BlockPos below = pos.below();
+    VoxelShape shape = level.getBlockState(below).getCollisionShape(level, below);
+    return shape.isEmpty() || shape.max(Direction.Axis.Y) <= 0.5D;
   }
 
   @Override
