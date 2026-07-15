@@ -1,4 +1,5 @@
-import windchimes.gradle.rewriteLegacyRecipeIngredients
+import windchimes.gradle.RewriteFabricMetadataAction
+import windchimes.gradle.RewriteLegacyRecipeIngredientsAction
 
 plugins {
     // This plugin applies the correct loom variant based on the Minecraft version
@@ -8,16 +9,12 @@ plugins {
 // DO NOT set group = ...!
 version = "${property("mod.version")}+${sc.current.version}"
 base.archivesName = "${property("mod.id") as String}-fabric"
+val modId = property("mod.id") as String
 
 val requiredJava: JavaVersion = when {
-    sc.current.version.startsWith("1.21") -> JavaVersion.VERSION_21
-    else -> JavaVersion.VERSION_25
+    sc.current.parsed >= "26.1" -> JavaVersion.VERSION_25
+    else -> JavaVersion.VERSION_21
 }
-val requiredJavaLauncher = javaToolchains.launcherFor {
-    vendor = JvmVendorSpec.ADOPTIUM
-    languageVersion = JavaLanguageVersion.of(requiredJava.majorVersion)
-}
-
 repositories {
     /**
      * Restricts dependency search of the given [groups] to the [maven URL][url],
@@ -50,7 +47,7 @@ dependencies {
         "fabric-object-builder-api-v1",
         "fabric-rendering-v1"
     )
-    if (sc.current.parsed >= "26.1") fapi("fabric-creative-tab-api-v1")
+    if (sc.current.parsed >= "26.1") fapi("fabric-creative-tab-api-v1") else fapi("fabric-item-group-api-v1")
 }
 
 loom {
@@ -80,10 +77,6 @@ java {
 }
 
 tasks {
-    withType<JavaExec>().configureEach {
-        javaLauncher = requiredJavaLauncher
-    }
-
     processResources {
         fun MutableMap<String, String>.register(key: String, property: String) {
             val value: String = sc.properties[property]
@@ -110,9 +103,8 @@ tasks {
 
         exclude("META-INF/neoforge.mods.toml")
 
-        if (sc.current.parsed < "1.21.2") doLast {
-            rewriteLegacyRecipeIngredients(destinationDir, project.property("mod.id") as String)
-        }
+        doLast(RewriteFabricMetadataAction(sc.current.parsed >= "26.1"))
+        if (sc.current.parsed < "1.21.2") doLast(RewriteLegacyRecipeIngredientsAction(modId))
     }
 
     register<Copy>("buildAndCollect") {

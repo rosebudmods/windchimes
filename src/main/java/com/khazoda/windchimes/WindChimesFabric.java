@@ -1,6 +1,9 @@
 package com.khazoda.windchimes;
 
 //? if fabric {
+//? if >= 26.1 {
+/*import com.khazoda.windchimes.platform.ChimeCreativeTabs;
+*///?}
 import com.khazoda.windchimes.registry.MainRegistry;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.core.Registry;
@@ -21,22 +24,8 @@ public class WindChimesFabric implements ModInitializer {
       }
     });
     //? if >= 26.1 {
-    /*registerCreativeTabItems();*/
+    /*ChimeCreativeTabs.registerItems();*/
     //?}
   }
-
-  //? if >= 26.1 {
-  /*private static void registerCreativeTabItems() {
-    CreativeModeTabEvents.modifyOutputEvent(ResourceKey.create(Registries.CREATIVE_MODE_TAB, Constants.ID("main"))).register(output -> {
-      addCreativeTabItem(output, MainRegistry.BAMBOO_CHIME_ITEM.get());
-      addCreativeTabItem(output, MainRegistry.COPPER_CHIME_ITEM.get());
-      addCreativeTabItem(output, MainRegistry.IRON_CHIME_ITEM.get());
-    });
-  }
-
-  private static void addCreativeTabItem(FabricCreativeModeTabOutput output, Item item) {
-    output.accept(item.getDefaultInstance(), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-  }*/
-  //?}
 }
 //?}

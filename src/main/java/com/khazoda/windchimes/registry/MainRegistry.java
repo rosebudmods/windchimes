@@ -10,9 +10,9 @@ import com.khazoda.windchimes.content.ChimeType;
 import com.khazoda.windchimes.content.WindChimeBlock;
 import com.khazoda.windchimes.content.WindChimeBlockEntity;
 import com.khazoda.windchimes.platform.ChimeBlockEntityTypes;
+import com.khazoda.windchimes.platform.ChimeCreativeTabs;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -46,22 +46,11 @@ public final class MainRegistry {
     BAMBOO_CHIME_ITEM = r.register(BuiltInRegistries.ITEM, "bamboo_chime", () -> new BlockItem(BAMBOO_CHIME.get(), itemSettings("bamboo_chime")));
     COPPER_CHIME_ITEM = r.register(BuiltInRegistries.ITEM, "copper_chime", () -> new BlockItem(COPPER_CHIME.get(), itemSettings("copper_chime")));
 
-    //? if >= 26.1 {
-    /*WINDCHIMES_TAB = r.register(BuiltInRegistries.CREATIVE_MODE_TAB, "main", () -> new CreativeModeTab.Builder(CreativeModeTab.Row.BOTTOM, 7)
-        .title(Component.translatable("itemGroup.windchimes.main"))
-        .icon(() -> COPPER_CHIME_ITEM.get().getDefaultInstance())
-        .build());*/
-    //?} else {
-    WINDCHIMES_TAB = r.register(BuiltInRegistries.CREATIVE_MODE_TAB, "main", () -> new CreativeModeTab.Builder(CreativeModeTab.Row.TOP, 0)
-        .title(Component.translatable("itemGroup.windchimes.main"))
-        .icon(() -> COPPER_CHIME_ITEM.get().getDefaultInstance())
-        .displayItems((parameters, output) -> {
-          output.accept(BAMBOO_CHIME_ITEM.get());
-          output.accept(COPPER_CHIME_ITEM.get());
-          output.accept(IRON_CHIME_ITEM.get());
-        })
-        .build());
-    //?}
+    WINDCHIMES_TAB = r.register(BuiltInRegistries.CREATIVE_MODE_TAB, "main", () -> ChimeCreativeTabs.create(
+        COPPER_CHIME_ITEM,
+        BAMBOO_CHIME_ITEM.get(),
+        COPPER_CHIME_ITEM.get(),
+        IRON_CHIME_ITEM.get()));
 
     r.register(BuiltInRegistries.SOUND_EVENT, "chime.iron.loud", () -> ChimeType.IRON_LOUD_SOUND);
     r.register(BuiltInRegistries.SOUND_EVENT, "chime.iron.quiet", () -> ChimeType.IRON_QUIET_SOUND);

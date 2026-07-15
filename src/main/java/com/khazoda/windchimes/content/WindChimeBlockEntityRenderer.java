@@ -6,7 +6,9 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+//? if < 1.21.9 {
 import net.minecraft.client.renderer.MultiBufferSource;
+//?}
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -25,8 +27,12 @@ import org.jetbrains.annotations.Nullable;
 /*import net.minecraft.world.phys.Vec3;*/
 //?}
 
-public class WindChimeBlockEntityRenderer implements BlockEntityRenderer<WindChimeBlockEntity/*? if >=1.21.9 {*//*, WindChimeBlockEntityRenderer.RenderState*//*?}*/> {
-  private static final float AMBIENT_LOOP_TICKS = Mth.TWO_PI * 100.0F;
+//? if >= 1.21.9 {
+/*public class WindChimeBlockEntityRenderer implements BlockEntityRenderer<WindChimeBlockEntity, WindChimeBlockEntityRenderer.RenderState> {
+*///?} else {
+public class WindChimeBlockEntityRenderer implements BlockEntityRenderer<WindChimeBlockEntity> {
+//?}
+private static final float AMBIENT_LOOP_TICKS = Mth.TWO_PI * 100.0F;
   private static final float[] ROD_SWING_SPEEDS = {0.75F, 1.05F, 0.90F, 0.85F};
   private static final float[] ROD_HEIGHTS = {16.0F, 17.5F, 16.5F, 17.0F};
   private final ModelPart model;
@@ -121,7 +127,11 @@ public class WindChimeBlockEntityRenderer implements BlockEntityRenderer<WindChi
 
   //? if < 1.21.9 {
   @Override
-  public void render(WindChimeBlockEntity entity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay/*? if >=1.21.5 {*//*, Vec3 cameraPos*//*?}*/) {
+  //? if >= 1.21.5 {
+  /*public void render(WindChimeBlockEntity entity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Vec3 cameraPos) {*/
+  //?} else {
+  public void render(WindChimeBlockEntity entity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+  //?}
     int heightPermutation = Math.floorMod(entity.getBlockPos().hashCode(), 24);
     animateModel(ambientTime(entity, partialTick), entity.getSwingTime(partialTick), entity.getSwingStrength(partialTick), entity.ringDirection, entity.seedForAnimation, heightPermutation);
     model.render(poseStack, bufferSource.getBuffer(RenderType.entityCutout(entity.getChimeType().textureId())), packedLight, packedOverlay);

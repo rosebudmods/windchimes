@@ -4,6 +4,9 @@ package com.khazoda.windchimes;
 import com.khazoda.windchimes.content.WindChimeBlockEntityRenderer;
 import com.khazoda.windchimes.registry.MainRegistry;
 import net.fabricmc.api.ClientModInitializer;
+//? if >= 1.21.9 {
+/*import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
+*///?} else {
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 //?}
 
@@ -12,8 +15,8 @@ public class WindChimesFabricClient implements ClientModInitializer {
   @SuppressWarnings("deprecation")
   public void onInitializeClient() {
     //? if >= 1.21.9 {
-    /*BlockEntityRenderers.register(MainRegistry.CHIME_BLOCK_ENTITY.get(), WindChimeBlockEntityRenderer::new);
-    *///?} else {
+    /*BlockEntityRenderers.register(MainRegistry.CHIME_BLOCK_ENTITY.get(), WindChimeBlockEntityRenderer::new);*/
+    //?} else {
     BlockEntityRendererRegistry.register(MainRegistry.CHIME_BLOCK_ENTITY.get(), WindChimeBlockEntityRenderer::new);
     //?}
   }

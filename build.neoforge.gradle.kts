@@ -1,4 +1,4 @@
-import windchimes.gradle.rewriteLegacyRecipeIngredients
+import windchimes.gradle.RewriteLegacyRecipeIngredientsAction
 
 plugins {
     id("net.neoforged.moddev") version "2.0.141"
@@ -7,16 +7,12 @@ plugins {
 
 version = "${property("mod.version")}+${sc.current.version}"
 base.archivesName = "${property("mod.id") as String}-neoforge"
+val modId = property("mod.id") as String
 
 val requiredJava = when {
-    sc.current.version.startsWith("1.21") -> JavaVersion.VERSION_21
-    else -> JavaVersion.VERSION_25
+    sc.current.parsed >= "26.1" -> JavaVersion.VERSION_25
+    else -> JavaVersion.VERSION_21
 }
-val requiredJavaLauncher = javaToolchains.launcherFor {
-    vendor = JvmVendorSpec.ADOPTIUM
-    languageVersion = JavaLanguageVersion.of(requiredJava.majorVersion)
-}
-
 repositories {
     /**
      * Restricts dependency search of the given [groups] to the [maven URL][url],
@@ -68,10 +64,6 @@ java {
 }
 
 tasks {
-    withType<JavaExec>().configureEach {
-        javaLauncher = requiredJavaLauncher
-    }
-
     processResources {
         fun MutableMap<String, String>.register(key: String, property: String) {
             val value: String = sc.properties[property]
@@ -96,9 +88,7 @@ tasks {
 
         exclude("fabric.mod.json", "*.ct", "*.classtweaker")
 
-        if (sc.current.parsed < "1.21.2") doLast {
-            rewriteLegacyRecipeIngredients(destinationDir, project.property("mod.id") as String)
-        }
+        if (sc.current.parsed < "1.21.2") doLast(RewriteLegacyRecipeIngredientsAction(modId))
     }
 
     named("createMinecraftArtifacts") {
