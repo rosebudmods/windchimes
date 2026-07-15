@@ -13,22 +13,6 @@ val requiredJava = when {
     sc.current.parsed >= "26.1" -> JavaVersion.VERSION_25
     else -> JavaVersion.VERSION_21
 }
-repositories {
-    /**
-     * Restricts dependency search of the given [groups] to the [maven URL][url],
-     * improving the setup speed.
-     */
-    fun strictMaven(url: String, alias: String, vararg groups: String) = exclusiveContent {
-        forRepository { maven(url) { name = alias } }
-        filter { groups.forEach(::includeGroup) }
-    }
-    strictMaven("https://www.cursemaven.com", "CurseForge", "curse.maven")
-    strictMaven("https://api.modrinth.com/maven", "Modrinth", "maven.modrinth")
-}
-
-dependencies {
-
-}
 
 neoForge {
     version = property("deps.neo_loader") as String

@@ -7,16 +7,13 @@ plugins {
 
 stonecutter active "1.21-fabric"
 
-// See https://stonecutter.kikugie.dev/wiki/config/params
 stonecutter parameters {
     val (version, loader) = current.project.split('-', limit = 2)
 
-    // Makes version- and loader-specific properties apply from `stoncutter.properties.toml`
     properties {
         tags(version, loader)
     }
 
-    // Adds constants to Stonecutter comments (i.e. for `//? if fabric {...`)
     constants {
         match(loader, "fabric", "neoforge")
     }

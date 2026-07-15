@@ -2,11 +2,9 @@ import windchimes.gradle.RewriteFabricMetadataAction
 import windchimes.gradle.RewriteLegacyRecipeIngredientsAction
 
 plugins {
-    // This plugin applies the correct loom variant based on the Minecraft version
     id("dev.kikugie.loom-back-compat")
 }
 
-// DO NOT set group = ...!
 version = "${property("mod.version")}+${sc.current.version}"
 base.archivesName = "${property("mod.id") as String}-fabric"
 val modId = property("mod.id") as String
@@ -15,18 +13,6 @@ val requiredJava: JavaVersion = when {
     sc.current.parsed >= "26.1" -> JavaVersion.VERSION_25
     else -> JavaVersion.VERSION_21
 }
-repositories {
-    /**
-     * Restricts dependency search of the given [groups] to the [maven URL][url],
-     * improving the setup speed.
-     */
-    fun strictMaven(url: String, alias: String, vararg groups: String) = exclusiveContent {
-        forRepository { maven(url) { name = alias } }
-        filter { groups.forEach(::includeGroup) }
-    }
-    strictMaven("https://www.cursemaven.com", "CurseForge", "curse.maven")
-    strictMaven("https://api.modrinth.com/maven", "Modrinth", "maven.modrinth")
-}
 
 dependencies {
     fun fapi(vararg modules: String) {
@@ -34,10 +20,8 @@ dependencies {
     }
 
     minecraft("com.mojang:minecraft:${sc.current.version}")
-    // Applies Mojang Mappings on obfuscated versions
     loomx.applyMojangMappings()
 
-    // Use `mod{dependency type}` even on 26.1+ - loom-back-compat converts them
     modImplementation("net.fabricmc:fabric-loader:${property("deps.fabric_loader")}")
     fapi(
         "fabric-lifecycle-events-v1",
@@ -51,17 +35,17 @@ dependencies {
 }
 
 loom {
-    fabricModJsonPath = rootProject.file("src/main/resources/fabric.mod.json") // Useful for interface injection
+    fabricModJsonPath = rootProject.file("src/main/resources/fabric.mod.json")
 
     decompilerOptions.named("vineflower") {
-        options.put("mark-corresponding-synthetics", "1") // Adds names to lambdas - useful for mixins
+        options.put("mark-corresponding-synthetics", "1")
     }
 
     runConfigs.all {
         preferGradleTask = true
         generateRunConfig = true
-        runDirectory = rootProject.file("run") // Shares the run directory between versions
-        jvmArguments.add("-Dmixin.debug.export=true") // Exports transformed classes for debugging
+        runDirectory = rootProject.file("run")
+        jvmArguments.add("-Dmixin.debug.export=true")
     }
 }
 
@@ -112,7 +96,6 @@ tasks {
         description = "Builds mod jars and copies results to `build/libs/{mod version}/`"
 
         inputs.property("version", project.property("mod.version"))
-        // loomx.mod(Sources)Jar returns the jar task for the applied loom variant
         from(loomx.modJar.flatMap { it.archiveFile }, loomx.modSourcesJar.flatMap { it.archiveFile })
         into(rootProject.layout.buildDirectory.file("libs/${project.property("mod.version")}"))
     }
