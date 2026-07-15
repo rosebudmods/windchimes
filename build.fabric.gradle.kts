@@ -42,7 +42,9 @@ loom {
     }
 
     runConfigs.all {
-        preferGradleTask = true
+        displayName.set("${if (name == "client") "FC" else "FS"} - ${sc.current.version}")
+        appendProjectPathToDisplayName.set(false)
+        preferGradleTask = false
         generateRunConfig = true
         runDirectory = rootProject.file("run")
         jvmArguments.add("-Dmixin.debug.export=true")

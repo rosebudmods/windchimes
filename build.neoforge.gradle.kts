@@ -25,11 +25,13 @@ neoForge {
 
     runs {
         register("client") {
+            ideName = "NC - ${sc.current.version}"
             gameDirectory = file("../../run/")
             client()
         }
 
         register("server") {
+            ideName = "NS - ${sc.current.version}"
             gameDirectory = file("../../run/")
             server()
         }
