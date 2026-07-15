@@ -10,8 +10,46 @@
           }
         ]
       }
+    },
+    "has_iron_chime": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "windchimes:iron_chime"
+          }
+        ]
+      }
+    },
+    "has_copper_chime": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "windchimes:copper_chime"
+          }
+        ]
+      }
+    },
+    "has_bamboo_chime": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "windchimes:bamboo_chime"
+          }
+        ]
+      }
     }
   },
+  "requirements": [
+    [
+      "has_string",
+      "has_iron_chime",
+      "has_copper_chime",
+      "has_bamboo_chime"
+    ]
+  ],
   "rewards": {
     "recipes": [
       "windchimes:iron_chime",
