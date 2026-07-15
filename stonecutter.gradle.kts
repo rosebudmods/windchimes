@@ -64,10 +64,14 @@ fun artifactFile(loader: String, version: String) = "$modId-$loader-${artifactVe
 fun publishTaskSuffix(loader: String, version: String) = "$loader${version.replace('.', '_')}".replaceFirstChar(Char::uppercase)
 fun artifactProvider(loader: String, version: String) = artifactDirectory.map { it.file(artifactFile(loader, version)) }
 
+val buildAndCollect = tasks.register("buildAndCollect") {
+    group = "build"
+    description = "Builds all mod jars and collects them in `build/libs/$modVersion/`."
+}
+
 gradle.projectsEvaluated {
-    val collectTasks = subprojects.map { it.tasks.named("buildAndCollect") }
-    tasks.matching { it.name.startsWith("publish") }.configureEach {
-        dependsOn(collectTasks)
+    buildAndCollect.configure {
+        dependsOn(subprojects.map { it.tasks.named("buildAndCollect") })
     }
 }
 

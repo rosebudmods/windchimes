@@ -68,11 +68,14 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      - run: ./gradlew buildAndCollect --console plain
+
       - run: |
           CHANGELOG="$(cat CHANGELOG.md)" ./gradlew publishMods \
             -PpublishDryRun=${{ inputs.dry_run }} \
             -PpublishCurseForge=${{ inputs.publish_curseforge }} \
             -PpublishModrinth=${{ inputs.publish_modrinth }} \
+            --no-parallel \
             --console plain
         env:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
