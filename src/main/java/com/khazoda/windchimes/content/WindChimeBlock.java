@@ -69,7 +69,7 @@ public class WindChimeBlock extends BaseEntityBlock {
     WindChimeBlockEntity chime = level.getBlockEntity(pos) instanceof WindChimeBlockEntity found ? found : null;
     float direction = (float) Mth.atan2(hit.getLocation().z - player.getZ(), hit.getLocation().x - player.getX());
     //? if =1.21.1 {
-    /*if (chime != null) direction = WindChimeSable.interactionDirection(chime, player, hit.getLocation().x, hit.getLocation().z, direction);
+    /*if (chime != null) direction = WindChimeSable.directionFromInteraction(chime, player, hit.getLocation().x, hit.getLocation().z, direction);
     *///?}
     boolean rang = chime != null && chime.tryRing(!player.isShiftKeyDown(), direction);
     //? if >= 1.21.2 {

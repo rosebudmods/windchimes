@@ -4,12 +4,19 @@ import com.khazoda.windchimes.registry.MainRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 public class WindChimeBlockEntity extends BlockEntity {
   private static final int DIRECTION_STEPS = 64; //5.625 degree precision
+  private static final AABB CONTACT_BOX = new AABB(4.0 / 16.0, -5.0 / 16.0, 4.0 / 16.0, 12.0 / 16.0, 1.0, 12.0 / 16.0); // projectile and entity collision detection
+  private static final double MIN_CONTACT_SPEED = 0.01;
+  private static final double LOUD_CONTACT_SPEED = 0.12;
   float previousSwingStrength;
   float swingStrength;
   float ringDirection;
@@ -41,6 +48,7 @@ public class WindChimeBlockEntity extends BlockEntity {
     }
 
     if (chime.ringTicks > 0 && --chime.ringTicks == 0) level.updateNeighbourForOutputSignal(pos, state.getBlock());
+    if (chime.ringTicks == 0 && chime.handleContact(level)) return;
     if (chime.ambientDelay == 0) chime.resetAmbientDelay(level);
     else if (--chime.ambientDelay == 0) {
       chime.resetAmbientDelay(level);
@@ -61,6 +69,46 @@ public class WindChimeBlockEntity extends BlockEntity {
     int directionStep = Mth.floor((direction + Mth.PI / 2.0F) * DIRECTION_STEPS / Mth.TWO_PI) + level.random.nextIntBetweenInclusive(-2, 2);
     ring(level, loud, Mth.positiveModulo(directionStep, DIRECTION_STEPS) + 1, level.random.nextIntBetweenInclusive(1, 255));
     return true;
+  }
+
+  private boolean ringFromMovement(Vec3 movement, boolean loud) {
+    Level level = this.level;
+    if (level == null) return false;
+
+    float direction = movement.horizontalDistanceSqr() == 0.0
+        ? level.random.nextFloat() * Mth.TWO_PI
+        : (float) Mth.atan2(movement.z, movement.x);
+    //? if =1.21.1 {
+    /*direction = WindChimeSable.directionFromMovement(this, movement, direction);
+    *///?}
+    return tryRing(loud, direction);
+  }
+
+  private boolean handleContact(Level level) {
+    AABB contactBox = CONTACT_BOX.move(worldPosition);
+    //? if =1.21.1 {
+    /*contactBox = WindChimeSable.worldContactBox(this, contactBox);
+    *///?}
+    for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, contactBox, entity -> !entity.isSpectator())) {
+      Vec3 movement = entity.getKnownMovement();
+      double speedSquared = movement.lengthSqr();
+      if (speedSquared < MIN_CONTACT_SPEED * MIN_CONTACT_SPEED) continue;
+      if (ringFromMovement(movement, speedSquared >= LOUD_CONTACT_SPEED * LOUD_CONTACT_SPEED)) return true;
+    }
+
+    // inflate search radius so projectiles aren't missed between ticks
+    for (Projectile projectile : level.getEntitiesOfClass(Projectile.class, contactBox.inflate(4.0))) {
+      Vec3 end = projectile.position();
+      Vec3 start = new Vec3(projectile.xo, projectile.yo, projectile.zo);
+      double radius = projectile.getBbWidth() * 0.5;
+      AABB pathTarget = contactBox.inflate(radius, 0.0, radius).expandTowards(0.0, -projectile.getBbHeight(), 0.0);
+      if (!pathTarget.contains(start) && pathTarget.clip(start, end).isEmpty()) continue;
+
+      Vec3 movement = end.subtract(start);
+      if (movement.lengthSqr() == 0.0) movement = projectile.getDeltaMovement();
+      if (movement.lengthSqr() != 0.0 && ringFromMovement(movement, true)) return true;
+    }
+    return false;
   }
 
   private void resetAmbientDelay(Level level) {

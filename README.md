@@ -1,4 +1,4 @@
-![wind chimes banner](/src/main/resources/assets/windchimes/banner.png)
+![wind chimes banner](https://cdn.modrinth.com/data/cached_images/b954ab6b0c9ad417294211e10b342a2ec2bc6917.webp)
 
 <h1 align="center" style="text-align: center;">
   <div>

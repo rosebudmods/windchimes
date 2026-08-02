@@ -9,6 +9,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3d;
 
@@ -153,18 +154,37 @@ final class WindChimeSable {
     return parts[part].zRot(partialTick);
   }
 
-  static float interactionDirection(WindChimeBlockEntity chime, Player player, double hitX, double hitZ, float fallback) {
+  static float directionFromInteraction(WindChimeBlockEntity chime, Player player, double hitX, double hitZ, float fallback) {
     SubLevelAccess subLevel = SableCompanion.INSTANCE.getContaining(chime);
     if (subLevel == null) return fallback;
 
     Vec3 eye = SableCompanion.INSTANCE.getEyePositionInterpolated(player, 1.0F);
     Vector3d localEye = new Vector3d(eye.x, eye.y, eye.z);
     subLevel.logicalPose().transformPositionInverse(localEye);
-    double directionX = hitX - localEye.x;
-    double directionZ = hitZ - localEye.z;
-    return directionX * directionX + directionZ * directionZ < 1.0E-6
-        ? fallback
-        : (float) Mth.atan2(directionZ, directionX);
+    return horizontalDirection(hitX - localEye.x, hitZ - localEye.z, fallback);
+  }
+
+  static float directionFromMovement(WindChimeBlockEntity chime, Vec3 movement, float fallback) {
+    SubLevelAccess subLevel = SableCompanion.INSTANCE.getContaining(chime);
+    if (subLevel == null) return fallback;
+
+    Vector3d localMovement = new Vector3d(movement.x, movement.y, movement.z);
+    subLevel.logicalPose().transformNormalInverse(localMovement);
+    return horizontalDirection(localMovement.x, localMovement.z, fallback);
+  }
+
+  // convert xz vector into angle, and if it's negligibly small, return fallback
+  private static float horizontalDirection(double x, double z, float fallback) {
+    return x * x + z * z < 1.0E-6 ? fallback : (float) Mth.atan2(z, x);
+  }
+
+  static AABB worldContactBox(WindChimeBlockEntity chime, AABB localBox) {
+    Vector3d anchor = new Vector3d((localBox.minX + localBox.maxX) * 0.5, localBox.maxY,
+        (localBox.minZ + localBox.maxZ) * 0.5);
+    SableCompanion.INSTANCE.projectOutOfSubLevel(chime.getLevel(), anchor);
+    double halfWidth = (localBox.maxX - localBox.minX) * 0.5;
+    return new AABB(anchor.x - halfWidth, anchor.y - (localBox.maxY - localBox.minY), anchor.z - halfWidth,
+        anchor.x + halfWidth, anchor.y, anchor.z + halfWidth);
   }
 
   private static void playImpactSound(WindChimeBlockEntity chime, float strength) {
