@@ -77,6 +77,7 @@ private static final float AMBIENT_LOOP_TICKS = Mth.TWO_PI * 100.0F;
     private float swingTime;
     private float swingStrength;
     private float ringDirection;
+    private float floatiness;
     private int seedForAnimation;
   }*/
   //?}
@@ -94,6 +95,7 @@ private static final float AMBIENT_LOOP_TICKS = Mth.TWO_PI * 100.0F;
     state.swingTime = entity.getSwingTime(partialTick);
     state.swingStrength = entity.getSwingStrength(partialTick);
     state.ringDirection = entity.ringDirection;
+    state.floatiness = entity.getChimeType().floatiness();
     state.seedForAnimation = entity.seedForAnimation;
     state.textureId = entity.getChimeType().textureId();
   }
@@ -103,6 +105,7 @@ private static final float AMBIENT_LOOP_TICKS = Mth.TWO_PI * 100.0F;
     collector.submitCustomGeometry(poseStack, RenderType.entityCutout(state.textureId), (pose, consumer) -> {
       int heightPermutation = Math.floorMod(state.blockPos.hashCode(), 24);
       animateModel(state.ambientTime, state.swingTime, state.swingStrength, state.ringDirection, state.seedForAnimation, heightPermutation);
+      scaleMotion(state.floatiness);
       submittedPose.last().set(pose);
       model.render(submittedPose, consumer, state.lightCoords, OverlayTexture.NO_OVERLAY);
     });
@@ -134,9 +137,41 @@ private static final float AMBIENT_LOOP_TICKS = Mth.TWO_PI * 100.0F;
   //?}
     int heightPermutation = Math.floorMod(entity.getBlockPos().hashCode(), 24);
     animateModel(ambientTime(entity, partialTick), entity.getSwingTime(partialTick), entity.getSwingStrength(partialTick), entity.ringDirection, entity.seedForAnimation, heightPermutation);
+    scaleMotion(entity.getChimeType().floatiness());
+    //? if =1.21.1 {
+    /*applySableMotion(entity, partialTick);
+    *///?}
     model.render(poseStack, bufferSource.getBuffer(RenderType.entityCutout(entity.getChimeType().textureId())), packedLight, packedOverlay);
   }
   //?}
+
+  //? if =1.21.1 {
+  /*private void applySableMotion(WindChimeBlockEntity entity, float partialTick) {
+    WindChimeSable motion = entity.getSableMotion();
+    if (motion == null) return;
+
+    platform.xRot += motion.xRot(WindChimeSable.PLATFORM, partialTick);
+    platform.zRot += motion.zRot(WindChimeSable.PLATFORM, partialTick);
+    for (int i = 0; i < rods.length; i++) {
+      rods[i].xRot += motion.xRot(WindChimeSable.FIRST_ROD + i, partialTick);
+      rods[i].zRot += motion.zRot(WindChimeSable.FIRST_ROD + i, partialTick);
+    }
+    clapper.xRot += motion.xRot(WindChimeSable.CLAPPER, partialTick);
+    clapper.zRot += motion.zRot(WindChimeSable.CLAPPER, partialTick);
+  }
+  *///?}
+
+  private void scaleMotion(float scale) {
+    platform.xRot *= scale;
+    platform.zRot *= scale;
+    for (ModelPart rod : rods) {
+      rod.xRot *= scale;
+      rod.yRot *= scale;
+      rod.zRot *= scale;
+    }
+    clapper.xRot *= scale;
+    clapper.zRot *= scale;
+  }
 
   private void animateModel(float ambientTime, float swingTime, float swingStrength, float direction, int seed, int heightPermutation) {
     float platformSwing = pendulumSwing(swingTime, 0.7F) * 0.025F * swingStrength;

@@ -15,15 +15,27 @@ deps.neoforge_loader = "[4,)"
 loomx.loom_version = "1.17-SNAPSHOT"
 
 ["1.21"]
-mod.mc_releases = ["1.21", "1.21.1"]
+mod.mc_releases = ["1.21"]
 
 [fabric."1.21"]
-mod.mc_compat = ">=1.21 <1.21.2"
+mod.mc_compat = ">=1.21 <1.21.1"
 deps.fabric_api = "0.102.0+1.21"
 
 [neoforge."1.21"]
-mod.mc_compat = "[1.21,1.21.2)"
+mod.mc_compat = "[1.21,1.21.1)"
 deps.neo_loader = "21.0.167"
+
+["1.21.1"]
+mod.mc_releases = ["1.21.1"]
+deps.sable_companion = "1.6.0"
+
+[fabric."1.21.1"]
+mod.mc_compat = ">=1.21.1 <1.21.2"
+deps.fabric_api = "0.110.0+1.21.1"
+
+[neoforge."1.21.1"]
+mod.mc_compat = "[1.21.1,1.21.2)"
+deps.neo_loader = "21.1.228"
 
 ["1.21.3"]
 mod.mc_releases = ["1.21.2", "1.21.3"]

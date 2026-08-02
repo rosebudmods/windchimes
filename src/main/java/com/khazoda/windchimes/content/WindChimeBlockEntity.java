@@ -17,6 +17,9 @@ public class WindChimeBlockEntity extends BlockEntity {
   private long ringStartTick;
   private int ringTicks;
   private int ambientDelay;
+  //? if =1.21.1 {
+  /*private WindChimeSable sable;
+  *///?}
 
   public WindChimeBlockEntity(BlockPos pos, BlockState state) {
     super(MainRegistry.CHIME_BLOCK_ENTITY.get(), pos, state);
@@ -30,6 +33,10 @@ public class WindChimeBlockEntity extends BlockEntity {
       chime.previousSwingStrength = chime.swingStrength;
       float target = chime.ringTicks / 35.0F; //smaller divisor = bigger swings
       chime.swingStrength = Mth.lerp(target > chime.swingStrength ? 0.5F : 0.25F, chime.swingStrength, target);
+      //? if =1.21.1 {
+      /*if (chime.sable == null) chime.sable = new WindChimeSable();
+      chime.sable.tick(chime);
+      *///?}
       return;
     }
 
@@ -99,4 +106,10 @@ public class WindChimeBlockEntity extends BlockEntity {
   float getSwingTime(float partialTick) {
     return ((level == null ? 0L : level.getGameTime()) - ringStartTick + partialTick) * 0.2F;
   }
+
+  //? if =1.21.1 {
+  /*WindChimeSable getSableMotion() {
+    return sable;
+  }
+  *///?}
 }

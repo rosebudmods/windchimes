@@ -8,7 +8,7 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 
-public record ChimeType(SoundEvent loudSound, SoundEvent quietSound, ResourceLocation textureId) {
+public record ChimeType(SoundEvent loudSound, SoundEvent quietSound, ResourceLocation textureId, float floatiness) {
   public static final ChimeType IRON;
   public static final ChimeType BAMBOO;
   public static final ChimeType COPPER;
@@ -43,10 +43,10 @@ public record ChimeType(SoundEvent loudSound, SoundEvent quietSound, ResourceLoc
     COPPER_LOUD_SOUND = SoundEvent.createFixedRangeEvent(COPPER_LOUD_SOUND_ID, 48.0F);
     COPPER_QUIET_SOUND = SoundEvent.createFixedRangeEvent(COPPER_QUIET_SOUND_ID, 24.0F);
 
-    IRON = new ChimeType(IRON_LOUD_SOUND, IRON_QUIET_SOUND, Constants.ID("textures/iron_chime.png"));
-    BAMBOO = new ChimeType(BAMBOO_LOUD_SOUND, BAMBOO_QUIET_SOUND, Constants.ID("textures/bamboo_chime.png"));
-    COPPER = new ChimeType(COPPER_LOUD_SOUND, COPPER_QUIET_SOUND, Constants.ID("textures/copper_chime.png"));
-    INVALID = new ChimeType(SoundEvents.PIGLIN_AMBIENT, SoundEvents.PIGLIN_HURT, ResourceLocation.withDefaultNamespace("textures/block/red_concrete.png"));
+    IRON = new ChimeType(IRON_LOUD_SOUND, IRON_QUIET_SOUND, Constants.ID("textures/iron_chime.png"), 0.7F);
+    BAMBOO = new ChimeType(BAMBOO_LOUD_SOUND, BAMBOO_QUIET_SOUND, Constants.ID("textures/bamboo_chime.png"), 1.3F);
+    COPPER = new ChimeType(COPPER_LOUD_SOUND, COPPER_QUIET_SOUND, Constants.ID("textures/copper_chime.png"), 1.0F);
+    INVALID = new ChimeType(SoundEvents.PIGLIN_AMBIENT, SoundEvents.PIGLIN_HURT, ResourceLocation.withDefaultNamespace("textures/block/red_concrete.png"), 1.0F);
   }
 
   public static BlockBehaviour.Properties defaultSettings(SoundType soundType, MapColor mapColor) {

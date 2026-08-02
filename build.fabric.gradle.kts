@@ -5,6 +5,15 @@ plugins {
     id("dev.kikugie.loom-back-compat")
 }
 
+repositories {
+    exclusiveContent {
+        forRepository {
+            maven("https://maven.ryanhcode.dev/releases") { name = "RyanHCode" }
+        }
+        filter { includeGroup("dev.ryanhcode.sable-companion") }
+    }
+}
+
 version = "${property("mod.version")}+${sc.current.version}"
 base.archivesName = "${property("mod.id") as String}-fabric"
 val modId = property("mod.id") as String
@@ -23,6 +32,10 @@ dependencies {
     loomx.applyMojangMappings()
 
     modImplementation("net.fabricmc:fabric-loader:${property("deps.fabric_loader")}")
+    if (sc.current.parsed >= "1.21.1" && sc.current.parsed < "1.21.2") {
+        val companionVersion: String = sc.properties["deps.sable_companion"]
+        include(modApi("dev.ryanhcode.sable-companion:sable-companion-fabric-1.21.1:$companionVersion")!!)
+    }
     fapi(
         "fabric-lifecycle-events-v1",
         "fabric-resource-loader-v0",

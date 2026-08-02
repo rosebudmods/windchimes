@@ -5,9 +5,25 @@ plugins {
     id("neoforge-mutex")
 }
 
+repositories {
+    exclusiveContent {
+        forRepository {
+            maven("https://maven.ryanhcode.dev/releases") { name = "RyanHCode" }
+        }
+        filter { includeGroup("dev.ryanhcode.sable-companion") }
+    }
+}
+
 version = "${property("mod.version")}+${sc.current.version}"
 base.archivesName = "${property("mod.id") as String}-neoforge"
 val modId = property("mod.id") as String
+
+dependencies {
+    if (sc.current.parsed >= "1.21.1" && sc.current.parsed < "1.21.2") {
+        val companionVersion: String = sc.properties["deps.sable_companion"]
+        jarJar(api("dev.ryanhcode.sable-companion:sable-companion-common-1.21.1:[$companionVersion,1.6.1)")!!)
+    }
+}
 
 val requiredJava = when {
     sc.current.parsed >= "26.1" -> JavaVersion.VERSION_25

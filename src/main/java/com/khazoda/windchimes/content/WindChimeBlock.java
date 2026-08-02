@@ -42,15 +42,15 @@ public class WindChimeBlock extends BaseEntityBlock {
     registerDefaultState(defaultBlockState().setValue(POWERED, false));
   }
 
-  @Override
-  protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
-    return !level.isEmptyBlock(pos.above()) && hasRoomBelow(level, pos);
-  }
-
   private static boolean hasRoomBelow(LevelReader level, BlockPos pos) {
     BlockPos below = pos.below();
     VoxelShape shape = level.getBlockState(below).getCollisionShape(level, below);
     return shape.isEmpty() || shape.max(Direction.Axis.Y) <= 0.5D;
+  }
+
+  @Override
+  protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
+    return !level.isEmptyBlock(pos.above()) && hasRoomBelow(level, pos);
   }
 
   @Override
@@ -66,8 +66,12 @@ public class WindChimeBlock extends BaseEntityBlock {
 
   @Override
   protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    WindChimeBlockEntity chime = level.getBlockEntity(pos) instanceof WindChimeBlockEntity found ? found : null;
     float direction = (float) Mth.atan2(hit.getLocation().z - player.getZ(), hit.getLocation().x - player.getX());
-    boolean rang = level.getBlockEntity(pos) instanceof WindChimeBlockEntity chime && chime.tryRing(!player.isShiftKeyDown(), direction);
+    //? if =1.21.1 {
+    /*if (chime != null) direction = WindChimeSable.interactionDirection(chime, player, hit.getLocation().x, hit.getLocation().z, direction);
+    *///?}
+    boolean rang = chime != null && chime.tryRing(!player.isShiftKeyDown(), direction);
     //? if >= 1.21.2 {
     /*return rang ? InteractionResult.SUCCESS_SERVER : InteractionResult.CONSUME;*/
     //?} else {
