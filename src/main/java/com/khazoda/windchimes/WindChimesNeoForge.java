@@ -60,8 +60,6 @@ public class WindChimesNeoForge {
     Dist dist =
         FMLEnvironment.dist;
     if (dist == Dist.CLIENT) WindChimesNeoForgeClient.register(eventBus);
-
-    WindChimesCommon.init();
   }
 
   //? if >= 26.1 {

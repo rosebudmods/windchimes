@@ -14,7 +14,6 @@ public class WindChimesFabric implements ModInitializer {
 
   @Override
   public void onInitialize() {
-    WindChimesCommon.init();
     MainRegistry.register(new MainRegistry.Reg() {
       @Override
       public <T, V extends T> Supplier<V> register(Registry<T> registry, String name, Supplier<V> supplier) {
