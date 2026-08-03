@@ -91,6 +91,9 @@ public class WindChimeBlockEntity extends BlockEntity {
     *///?}
     for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, contactBox, entity -> !entity.isSpectator())) {
       Vec3 movement = entity.getKnownMovement();
+      //? if =1.21.1 {
+      /*movement = WindChimeSable.relativeMovement(this, entity, movement);
+      *///?}
       if (movement.lengthSqr() < MIN_CONTACT_SPEED * MIN_CONTACT_SPEED) continue;
       RingStrength strength = entity.isCrouching() ? RingStrength.QUIET
           : entity.isSprinting() ? RingStrength.LOUD : RingStrength.MEDIUM;

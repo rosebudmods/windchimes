@@ -7,6 +7,7 @@ import dev.ryanhcode.sable.companion.math.Pose3dc;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -171,6 +172,25 @@ final class WindChimeSable {
     Vector3d localMovement = new Vector3d(movement.x, movement.y, movement.z);
     subLevel.logicalPose().transformNormalInverse(localMovement);
     return horizontalDirection(localMovement.x, localMovement.z, fallback);
+  }
+
+  // return relative movement only for entities that aren't on the chime's sublevel
+  static Vec3 relativeMovement(WindChimeBlockEntity chime, LivingEntity entity, Vec3 entityMovement) {
+    SubLevelAccess subLevel = SableCompanion.INSTANCE.getContaining(chime);
+    if (subLevel == null) return entityMovement;
+
+    SubLevelAccess entitySubLevel = SableCompanion.INSTANCE.getTrackingOrVehicleSubLevel(entity);
+    if (entitySubLevel != null && entitySubLevel.getUniqueId().equals(subLevel.getUniqueId())) {
+      Vector3d worldMovement = new Vector3d(entityMovement.x, entityMovement.y, entityMovement.z);
+      subLevel.logicalPose().transformNormal(worldMovement);
+      return new Vec3(worldMovement.x, worldMovement.y, worldMovement.z);
+    }
+
+    BlockPos pos = chime.getBlockPos();
+    Vector3d velocity = new Vector3d(pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5);
+    SableCompanion.INSTANCE.getVelocity(chime.getLevel(), subLevel, velocity);
+    return hasInvalidValues(velocity) ? entityMovement
+        : entityMovement.subtract(velocity.x * TICK_SECONDS, velocity.y * TICK_SECONDS, velocity.z * TICK_SECONDS);
   }
 
   // convert xz vector into angle, and if it's negligibly small, return fallback
