@@ -52,12 +52,12 @@ public final class MainRegistry {
         COPPER_CHIME_ITEM.get(),
         IRON_CHIME_ITEM.get()));
 
-    r.register(BuiltInRegistries.SOUND_EVENT, "chime.iron.loud", () -> ChimeType.IRON_LOUD_SOUND);
-    r.register(BuiltInRegistries.SOUND_EVENT, "chime.iron.quiet", () -> ChimeType.IRON_QUIET_SOUND);
-    r.register(BuiltInRegistries.SOUND_EVENT, "chime.bamboo.loud", () -> ChimeType.BAMBOO_LOUD_SOUND);
-    r.register(BuiltInRegistries.SOUND_EVENT, "chime.bamboo.quiet", () -> ChimeType.BAMBOO_QUIET_SOUND);
-    r.register(BuiltInRegistries.SOUND_EVENT, "chime.copper.loud", () -> ChimeType.COPPER_LOUD_SOUND);
-    r.register(BuiltInRegistries.SOUND_EVENT, "chime.copper.quiet", () -> ChimeType.COPPER_QUIET_SOUND);
+    r.register(BuiltInRegistries.SOUND_EVENT, ChimeType.IRON_LOUD_SOUND_ID.getPath(), () -> ChimeType.IRON_LOUD_SOUND);
+    r.register(BuiltInRegistries.SOUND_EVENT, ChimeType.IRON_SOFT_SOUND_ID.getPath(), () -> ChimeType.IRON_SOFT_SOUND);
+    r.register(BuiltInRegistries.SOUND_EVENT, ChimeType.BAMBOO_LOUD_SOUND_ID.getPath(), () -> ChimeType.BAMBOO_LOUD_SOUND);
+    r.register(BuiltInRegistries.SOUND_EVENT, ChimeType.BAMBOO_SOFT_SOUND_ID.getPath(), () -> ChimeType.BAMBOO_SOFT_SOUND);
+    r.register(BuiltInRegistries.SOUND_EVENT, ChimeType.COPPER_LOUD_SOUND_ID.getPath(), () -> ChimeType.COPPER_LOUD_SOUND);
+    r.register(BuiltInRegistries.SOUND_EVENT, ChimeType.COPPER_SOFT_SOUND_ID.getPath(), () -> ChimeType.COPPER_SOFT_SOUND);
 
     CHIME_BLOCK_ENTITY = r.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, "chime", () -> ChimeBlockEntityTypes.create(IRON_CHIME.get(), BAMBOO_CHIME.get(), COPPER_CHIME.get()));
     initialized = true;

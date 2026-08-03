@@ -192,7 +192,7 @@ final class WindChimeSable {
     if (level == null) return;
     BlockPos pos = chime.getBlockPos();
     level.playLocalSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-        chime.getChimeType().quietSound(), SoundSource.BLOCKS, Mth.lerp(strength, 0.55F, 0.9F),
+        chime.getChimeType().softSound(), SoundSource.BLOCKS, Mth.lerp(strength, 0.55F, 0.9F),
         0.9F + level.random.nextFloat() * 0.2F, false);
   }
 

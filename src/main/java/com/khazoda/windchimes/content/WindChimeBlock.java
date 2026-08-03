@@ -1,5 +1,6 @@
 package com.khazoda.windchimes.content;
 
+import com.khazoda.windchimes.content.WindChimeBlockEntity.RingStrength;
 import com.khazoda.windchimes.registry.MainRegistry;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
@@ -71,7 +72,7 @@ public class WindChimeBlock extends BaseEntityBlock {
     //? if =1.21.1 {
     /*if (chime != null) direction = WindChimeSable.directionFromInteraction(chime, player, hit.getLocation().x, hit.getLocation().z, direction);
     *///?}
-    boolean rang = chime != null && chime.tryRing(!player.isShiftKeyDown(), direction);
+    boolean rang = chime != null && chime.tryRing(player.isShiftKeyDown() ? RingStrength.QUIET : RingStrength.LOUD, direction);
     //? if >= 1.21.2 {
     /*return rang ? InteractionResult.SUCCESS_SERVER : InteractionResult.CONSUME;*/
     //?} else {
@@ -101,7 +102,9 @@ public class WindChimeBlock extends BaseEntityBlock {
     float direction = source.getStepY() == 0
         ? (float) Mth.atan2(-source.getStepZ(), -source.getStepX())
         : level.random.nextFloat() * Mth.TWO_PI;
-    chime.tryRing(true, direction);
+    RingStrength strength = strongestSignal <= 5 ? RingStrength.QUIET
+        : strongestSignal <= 10 ? RingStrength.MEDIUM : RingStrength.LOUD;
+    chime.tryRing(strength, direction);
   }
 
   @Override

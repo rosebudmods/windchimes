@@ -16,7 +16,6 @@ public class WindChimeBlockEntity extends BlockEntity {
   private static final int DIRECTION_STEPS = 64; //5.625 degree precision
   private static final AABB CONTACT_BOX = new AABB(4.0 / 16.0, -5.0 / 16.0, 4.0 / 16.0, 12.0 / 16.0, 1.0, 12.0 / 16.0); // projectile and entity collision detection
   private static final double MIN_CONTACT_SPEED = 0.01;
-  private static final double LOUD_CONTACT_SPEED = 0.12;
   float previousSwingStrength;
   float swingStrength;
   float ringDirection;
@@ -52,8 +51,9 @@ public class WindChimeBlockEntity extends BlockEntity {
     if (chime.ambientDelay == 0) chime.resetAmbientDelay(level);
     else if (--chime.ambientDelay == 0) {
       chime.resetAmbientDelay(level);
-      boolean loud = level.isThundering() ? level.random.nextInt(4) != 0 : level.random.nextInt(level.isRaining() ? 3 : 5) == 0;
-      chime.ring(level, loud, 0, 0);
+      boolean loud = level.isThundering() ? level.random.nextInt(4) != 0
+          : level.random.nextInt(level.isRaining() ? 3 : 5) == 0;
+      chime.ring(level, loud ? RingStrength.LOUD : RingStrength.MEDIUM, 0, 0);
     }
   }
 
@@ -62,16 +62,16 @@ public class WindChimeBlockEntity extends BlockEntity {
     return Math.floorMod(pos.hashCode(), 120);
   }
 
-  boolean tryRing(boolean loud, float direction) {
+  boolean tryRing(RingStrength strength, float direction) {
     Level level = this.level;
     if (level == null || level.isClientSide || ringTicks > 0) return false;
     resetAmbientDelay(level);
     int directionStep = Mth.floor((direction + Mth.PI / 2.0F) * DIRECTION_STEPS / Mth.TWO_PI) + level.random.nextIntBetweenInclusive(-2, 2);
-    ring(level, loud, Mth.positiveModulo(directionStep, DIRECTION_STEPS) + 1, level.random.nextIntBetweenInclusive(1, 255));
+    ring(level, strength, Mth.positiveModulo(directionStep, DIRECTION_STEPS) + 1, level.random.nextIntBetweenInclusive(1, 255));
     return true;
   }
 
-  private boolean ringFromMovement(Vec3 movement, boolean loud) {
+  private boolean ringFromMovement(Vec3 movement, RingStrength strength) {
     Level level = this.level;
     if (level == null) return false;
 
@@ -81,7 +81,7 @@ public class WindChimeBlockEntity extends BlockEntity {
     //? if =1.21.1 {
     /*direction = WindChimeSable.directionFromMovement(this, movement, direction);
     *///?}
-    return tryRing(loud, direction);
+    return tryRing(strength, direction);
   }
 
   private boolean handleContact(Level level) {
@@ -91,9 +91,10 @@ public class WindChimeBlockEntity extends BlockEntity {
     *///?}
     for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, contactBox, entity -> !entity.isSpectator())) {
       Vec3 movement = entity.getKnownMovement();
-      double speedSquared = movement.lengthSqr();
-      if (speedSquared < MIN_CONTACT_SPEED * MIN_CONTACT_SPEED) continue;
-      if (ringFromMovement(movement, speedSquared >= LOUD_CONTACT_SPEED * LOUD_CONTACT_SPEED)) return true;
+      if (movement.lengthSqr() < MIN_CONTACT_SPEED * MIN_CONTACT_SPEED) continue;
+      RingStrength strength = entity.isCrouching() ? RingStrength.QUIET
+          : entity.isSprinting() ? RingStrength.LOUD : RingStrength.MEDIUM;
+      if (ringFromMovement(movement, strength)) return true;
     }
 
     // inflate search radius so projectiles aren't missed between ticks
@@ -106,7 +107,7 @@ public class WindChimeBlockEntity extends BlockEntity {
 
       Vec3 movement = end.subtract(start);
       if (movement.lengthSqr() == 0.0) movement = projectile.getDeltaMovement();
-      if (movement.lengthSqr() != 0.0 && ringFromMovement(movement, true)) return true;
+      if (movement.lengthSqr() != 0.0 && ringFromMovement(movement, RingStrength.LOUD)) return true;
     }
     return false;
   }
@@ -117,24 +118,32 @@ public class WindChimeBlockEntity extends BlockEntity {
     ambientDelay = min + level.random.nextInt(range);
   }
 
-  private void ring(Level level, boolean loud, int direction, int seed) {
-    ringTicks = loud ? 140 : 60;
+  private void ring(Level level, RingStrength strength, int direction, int seed) {
+    ringTicks = strength.duration;
     level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
-    level.blockEvent(worldPosition, getBlockState().getBlock(), seed, (direction << 1) | (loud ? 1 : 0));
+    level.blockEvent(worldPosition, getBlockState().getBlock(), seed, direction * 3 + strength.ordinal());
   }
 
   @Override
   public boolean triggerEvent(int seed, int data) {
     if (level == null) return super.triggerEvent(seed, data);
 
-    boolean loud = (data & 1) != 0;
+    RingStrength strength = switch (data % 3) {
+      case 0 -> RingStrength.QUIET;
+      case 1 -> RingStrength.MEDIUM;
+      default -> RingStrength.LOUD;
+    };
     if (level.isClientSide) {
-      ringTicks = loud ? 140 : 60;
+      ringTicks = strength.duration;
       ringStartTick = level.getGameTime();
       seedForAnimation = seed;
-      if (data > 1) ringDirection = ((data >>> 1) - 1) * Mth.TWO_PI / DIRECTION_STEPS;
+      int direction = data / 3;
+      if (direction > 0) ringDirection = (direction - 1) * Mth.TWO_PI / DIRECTION_STEPS;
     } else {
-      level.playSound(null, worldPosition, loud ? getChimeType().loudSound() : getChimeType().quietSound(), SoundSource.BLOCKS, 0.9F + level.random.nextFloat() * 0.2F, 0.8F + level.random.nextFloat() * 0.4F);
+      level.playSound(null, worldPosition,
+          strength == RingStrength.LOUD ? getChimeType().loudSound() : getChimeType().softSound(),
+          SoundSource.BLOCKS, strength.volume + level.random.nextFloat() * 0.2F,
+          0.8F + level.random.nextFloat() * 0.4F);
     }
     return true;
   }
@@ -153,6 +162,18 @@ public class WindChimeBlockEntity extends BlockEntity {
 
   float getSwingTime(float partialTick) {
     return ((level == null ? 0L : level.getGameTime()) - ringStartTick + partialTick) * 0.2F;
+  }
+
+  enum RingStrength {
+    QUIET(35, 0.35F), MEDIUM(75, 0.9F), LOUD(140, 0.9F);
+
+    final int duration;
+    final float volume;
+
+    RingStrength(int duration, float volume) {
+      this.duration = duration;
+      this.volume = volume;
+    }
   }
 
   //? if =1.21.1 {
