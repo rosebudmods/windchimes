@@ -128,7 +128,7 @@ publishMods {
     }
 
     github {
-        repository.set("khazoda/windchimes")
+        repository.set("rosebudmods/windchimes")
         accessToken.set(providers.environmentVariable("GITHUB_TOKEN"))
         commitish.set(providers.environmentVariable("GITHUB_REF_NAME").orElse("fresh"))
         tagName.set("v$modVersion")

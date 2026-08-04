@@ -6,8 +6,8 @@ mod.description = "three wind chimes that sway in the wind and occasionally ring
 mod.authors = "khazoda, hibi"
 mod.license = "Unlicense"
 mod.homepage = "https://www.khazoda.com#windchimes"
-mod.sources = "https://github.com/khazoda/windchimes"
-mod.issues = "https://github.com/khazoda/windchimes/issues"
+mod.sources = "https://github.com/rosebudmods/windchimes"
+mod.issues = "https://github.com/rosebudmods/windchimes/issues"
 mod.discord = "https://discord.com/invite/vEZUkSxwR9"
 
 deps.fabric_loader = "0.19.3"

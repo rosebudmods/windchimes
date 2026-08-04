@@ -52,7 +52,7 @@ jobs:
             : "${MODRINTH_TOKEN:?MODRINTH_TOKEN is not configured}"
             curl --fail --silent --show-error \
               --header "Authorization: ${MODRINTH_TOKEN}" \
-              --header "User-Agent: khazoda/windchimes GitHub Actions" \
+              --header "User-Agent: rosebudmods/windchimes GitHub Actions" \
               https://api.modrinth.com/v2/user > /dev/null
           fi
 
