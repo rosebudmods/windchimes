@@ -48,20 +48,40 @@ stonecutter parameters {
 }
 
 val versionTargets = stonecutter.tree.nodes.map { node ->
-    node.metadata.version to stonecutter.properties.raw(node.metadata.version, "mod", "mc_releases").asList().map { it.toString() }
+    node.metadata.version to stonecutter.properties.raw(node.metadata.version, "mod", "mc_releases").asList()
+        .map { it.toString() }
 }.distinctBy { it.first }
+
+val availableVersions = versionTargets.map { it.first }.toSet()
+val publishVersions =
+    providers.environmentVariable("PUBLISH_VERSIONS").orNull?.takeUnless { it.isBlank() }?.split(Regex("[,\\s]+"))
+        ?.filter { it.isNotBlank() }?.toSet() ?: availableVersions
+val unknownPublishVersions = publishVersions - availableVersions
+require(unknownPublishVersions.isEmpty()) {
+    "Unknown publish versions: ${unknownPublishVersions.joinToString()}"
+}
+val publishTargets = versionTargets.filter { (version, _) -> version in publishVersions }
+require(publishTargets.isNotEmpty()) {
+    "PUBLISH_VERSIONS did not select any Minecraft versions"
+}
 
 val modId = property("mod.id") as String
 val modName = property("mod.name") as String
 val modVersion = property("mod.version") as String
 val loaders = listOf("fabric", "neoforge")
+val publishingAllVersions = publishTargets.map { it.first }.toSet() == availableVersions
+val githubVersion =
+    if (publishingAllVersions) modVersion else "$modVersion+${publishTargets.joinToString("-") { it.first }}"
 val publishCurseForge = providers.gradleProperty("publishCurseForge").map(String::toBoolean).orElse(true).get()
 val publishModrinth = providers.gradleProperty("publishModrinth").map(String::toBoolean).orElse(true).get()
+val publishGitHub = providers.gradleProperty("publishGitHub").map(String::toBoolean).orElse(true).get()
 val artifactDirectory = layout.buildDirectory.dir("libs/$modVersion")
 
 fun artifactVersion(version: String) = "$modVersion+$version"
 fun artifactFile(loader: String, version: String) = "$modId-$loader-${artifactVersion(version)}.jar"
-fun publishTaskSuffix(loader: String, version: String) = "$loader${version.replace('.', '_')}".replaceFirstChar(Char::uppercase)
+fun publishTaskSuffix(loader: String, version: String) =
+    "$loader${version.replace('.', '_')}".replaceFirstChar(Char::uppercase)
+
 fun artifactProvider(loader: String, version: String) = artifactDirectory.map { it.file(artifactFile(loader, version)) }
 
 val buildAndCollect = tasks.register("buildAndCollect") {
@@ -94,7 +114,7 @@ publishMods {
         accessToken.set(providers.environmentVariable("MODRINTH_TOKEN"))
     }
 
-    versionTargets.forEach { (mcVersion, mcReleases) ->
+    publishTargets.forEach { (mcVersion, mcReleases) ->
         loaders.forEach { loader ->
             val targetVersion = artifactVersion(mcVersion)
             val artifact = artifactProvider(loader, mcVersion)
@@ -127,14 +147,20 @@ publishMods {
         }
     }
 
-    github {
-        repository.set("rosebudmods/windchimes")
-        accessToken.set(providers.environmentVariable("GITHUB_TOKEN"))
-        commitish.set(providers.environmentVariable("GITHUB_REF_NAME").orElse("fresh"))
-        tagName.set("v$modVersion")
-        file.set(artifactProvider(loaders.first(), versionTargets.first().first))
-        additionalFiles.from(versionTargets.flatMap { (mcVersion, _) ->
-            loaders.map { loader -> artifactProvider(loader, mcVersion) }
-        }.drop(1))
+    if (publishGitHub) {
+        github {
+            repository.set("rosebudmods/windchimes")
+            accessToken.set(providers.environmentVariable("GITHUB_TOKEN"))
+            commitish.set(providers.environmentVariable("GITHUB_REF_NAME").orElse("main"))
+            version.set(githubVersion)
+            displayName.set("$modName $githubVersion")
+            tagName.set("v$githubVersion")
+
+            val githubArtifacts = publishTargets.flatMap { (mcVersion, _) ->
+                loaders.map { loader -> artifactProvider(loader, mcVersion) }
+            }
+            file.set(githubArtifacts.first())
+            additionalFiles.from(githubArtifacts.drop(1))
+        }
     }
 }

@@ -2,7 +2,9 @@ package com.khazoda.windchimes.content;
 
 import com.khazoda.windchimes.content.WindChimeBlockEntity.RingStrength;
 import com.khazoda.windchimes.registry.MainRegistry;
+//? if < 26.3 {
 import com.mojang.serialization.MapCodec;
+//?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
@@ -32,7 +34,10 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class WindChimeBlock extends BaseEntityBlock {
+  // moj removed codec req from the block lol
+  //? if < 26.3 {
   public static final MapCodec<WindChimeBlock> CODEC = simpleCodec(properties -> new WindChimeBlock(ChimeType.INVALID, properties));
+  //?}
   private static final VoxelShape SHAPE = Block.box(4.0, 8.0, 4.0, 12.0, 16.0, 12.0);
   private static final BooleanProperty POWERED = BlockStateProperties.POWERED;
   private final ChimeType chimeType;
@@ -126,10 +131,12 @@ public class WindChimeBlock extends BaseEntityBlock {
     return new WindChimeBlockEntity(pos, state);
   }
 
+  //? if < 26.3 {
   @Override
   protected MapCodec<? extends WindChimeBlock> codec() {
     return CODEC;
   }
+  //?}
 
   @Override
   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {

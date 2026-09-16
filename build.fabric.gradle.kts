@@ -17,6 +17,7 @@ repositories {
 version = "${property("mod.version")}+${sc.current.version}"
 base.archivesName = "${property("mod.id") as String}-fabric"
 val modId = property("mod.id") as String
+val fabricResourceLoader = if (sc.current.parsed >= "26.1") "fabric-resource-loader-v1" else "fabric-resource-loader-v0"
 
 val requiredJava: JavaVersion = when {
     sc.current.parsed >= "26.1" -> JavaVersion.VERSION_25
@@ -38,7 +39,7 @@ dependencies {
     }
     fapi(
         "fabric-lifecycle-events-v1",
-        "fabric-resource-loader-v0",
+        fabricResourceLoader,
         "fabric-content-registries-v0",
         "fabric-registry-sync-v0",
         "fabric-object-builder-api-v1",
@@ -77,6 +78,8 @@ java {
 
 tasks {
     processResources {
+        inputs.property("fabric_resource_loader", fabricResourceLoader)
+
         fun MutableMap<String, String>.register(key: String, property: String) {
             val value: String = sc.properties[property]
             inputs.property(key, value)
@@ -96,6 +99,7 @@ tasks {
             register("issues", "mod.issues")
             register("discord", "mod.discord")
             register("fabric_loader", "deps.fabric_loader")
+            put("fabric_resource_loader", fabricResourceLoader)
         }
 
         filesMatching("fabric.mod.json") { expand(props) }

@@ -1,7 +1,7 @@
 import windchimes.gradle.RewriteLegacyRecipeIngredientsAction
 
 plugins {
-    id("net.neoforged.moddev") version "2.0.141"
+    id("net.neoforged.moddev") version "2.0.147"
     id("neoforge-mutex")
 }
 

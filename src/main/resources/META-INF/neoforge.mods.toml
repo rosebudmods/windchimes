@@ -5,7 +5,9 @@ license = "${license}"
 [[mods]]
 modId = "${id}"
 version = "${version}"
+iconFile = "assets/${id}/icon.png"
 logoFile = "assets/${id}/banner.png"
+bannerFile = "assets/${id}/banner.png"
 logoBlur = false
 displayName = "${name}"
 displayURL = "${homepage}"
@@ -13,13 +15,13 @@ authors = "${authors}"
 description = '''${description}'''
 issueTrackerURL = "${issues}"
 
-[[dependencies.${id}]]
+[[dependencies.${ id }]]
 modId = "minecraft"
 type = "required"
 versionRange = "${minecraft}"
 ordering = "NONE"
 side = "BOTH"
 
-[modproperties.${id}]
+[modproperties.${ id }]
 catalogueImageIcon = "assets/${id}/icon.png"
 catalogueBackground = "assets/${id}/background.png"

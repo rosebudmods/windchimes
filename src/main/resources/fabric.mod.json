@@ -26,7 +26,7 @@
   "depends": {
     "fabricloader": ">=${fabric_loader}",
     "fabric-lifecycle-events-v1": "*",
-    "fabric-resource-loader-v0": "*",
+    "${fabric_resource_loader}": "*",
     "fabric-content-registries-v0": "*",
     "fabric-registry-sync-v0": "*",
     "fabric-object-builder-api-v1": "*",
