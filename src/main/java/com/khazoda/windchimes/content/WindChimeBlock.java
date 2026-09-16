@@ -35,9 +35,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class WindChimeBlock extends BaseEntityBlock {
   // moj removed codec req from the block lol
-  //? if < 26.3 {
+  //? if < 26.3
   public static final MapCodec<WindChimeBlock> CODEC = simpleCodec(properties -> new WindChimeBlock(ChimeType.INVALID, properties));
-  //?}
   private static final VoxelShape SHAPE = Block.box(4.0, 8.0, 4.0, 12.0, 16.0, 12.0);
   private static final BooleanProperty POWERED = BlockStateProperties.POWERED;
   private final ChimeType chimeType;
